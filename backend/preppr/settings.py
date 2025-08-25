@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'preppr.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': BASE_DIR / 'preppr_db',
+        'NAME': 'preppr_db',
     }
 }
 
