@@ -1,3 +1,4 @@
+# serializers.py
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -26,15 +27,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate_email(self, value):
-        """Check if email is unique (since it will be used as username)"""
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("A user with this email already exists.")
-        if User.objects.filter(username=value).exists():
+        # Use email as username → ensure uniqueness across both fields
+        if User.objects.filter(email=value).exists() or User.objects.filter(username=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
     def validate_password(self, value):
-        """Validate password using Django's built-in validators"""
         try:
             validate_password(value)
         except ValidationError as e:
@@ -42,37 +40,28 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """Check if passwords match"""
         if attrs["password"] != attrs["password_confirm"]:
-            raise serializers.ValidationError(
-                {"password_confirm": "Passwords don't match."}
-            )
+            raise serializers.ValidationError({"password_confirm": "Passwords don't match."})
         return attrs
 
     def create(self, validated_data):
-        # Remove password_confirm since it's not needed for user creation
         validated_data.pop("password_confirm")
-
-        # Use email as username
         email = validated_data["email"]
         validated_data["username"] = email
-
-        # Create user with hashed password
         user = User.objects.create_user(**validated_data)
 
-        # Create appropriate profile based on role
+        # Auto-create profile for role
         if user.role == User.Roles.BUYER:
             BuyerProfile.objects.create(user=user)
         elif user.role == User.Roles.SELLER:
             SellerProfile.objects.create(user=user)
-
         return user
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "role"]
+        fields = ["id", "username", "email", "role", "first_name", "last_name"]
 
 
 class BuyerProfileSerializer(serializers.ModelSerializer):
@@ -83,7 +72,30 @@ class BuyerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BuyerProfile
-        fields = ["id", "user", "allergies", "preference", "location", "favorite_stall"]
+        # Include all model fields that belong on the API
+        fields = [
+            "id",
+            "user",
+            "allergies",
+            "preference",
+            "location",
+            "address",
+            "zipcode",
+            "favorite_stall",
+        ]
+
+    def validate_zipcode(self, value):
+        # Allow empty / null to pass through (handled by model defaults)
+        if value in ("", None):
+            return value
+        # Enforce numeric and <= 5 digits (0..99999)
+        try:
+            iv = int(value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("Zipcode must be numeric.")
+        if iv < 0 or iv > 99999:
+            raise serializers.ValidationError("Zipcode must be at most 5 digits (0–99999).")
+        return iv
 
 
 class SellerProfileSerializer(serializers.ModelSerializer):
@@ -94,4 +106,22 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SellerProfile
-        fields = ["id", "user", "location", "stall"]
+        fields = [
+            "id",
+            "user",
+            "location",
+            "address",
+            "zipcode",
+            "stall",
+        ]
+
+    def validate_zipcode(self, value):
+        if value in ("", None):
+            return value
+        try:
+            iv = int(value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("Zipcode must be numeric.")
+        if iv < 0 or iv > 99999:
+            raise serializers.ValidationError("Zipcode must be at most 5 digits (0–99999).")
+        return iv

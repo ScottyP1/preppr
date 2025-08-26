@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class User(AbstractUser):
     class Roles(models.TextChoices):
@@ -23,6 +25,10 @@ class BuyerProfile(models.Model):
     allergies = models.TextField(blank=True, default="")
     preference = models.CharField(max_length=255, blank=True, default="")
     location = models.CharField(max_length=255, blank=True, default="")
+    address= models.CharField(max_length=255, blank=True, default="")
+    zipcode = models.IntegerField(
+        null=True, blank=True, default=None,
+        validators=[MinValueValidator(0), MaxValueValidator(99999)])
     favorite_stall = models.ForeignKey(
         "store_app.Stall",           
         null=True, blank=True,
@@ -33,6 +39,11 @@ class BuyerProfile(models.Model):
 class SellerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller_profile")
     location = models.CharField(max_length=255, blank=True, default="")
+    address= models.CharField(max_length=255, blank=True, default="")
+    zipcode = models.IntegerField(
+        null=True, blank=True, default=None,
+        validators=[MinValueValidator(0), MaxValueValidator(99999)])
+
     stall = models.OneToOneField(
         "store_app.Stall",                
         null=True, blank=True,
