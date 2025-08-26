@@ -25,12 +25,14 @@ export default function Home() {
               neighborhoods with love, not mass production
             </span>
             <Link
-              href="#"
+              href="/signup"
               className="w-full text-xl font-bold p-4 bg-[#82FF82] hover:bg-[#76E7A4] text-black rounded-full"
             >
               Join Preppr
             </Link>
-            <Link href="#">Already have an account? Click Here to Login</Link>
+            <Link href="login">
+              Already have an account? Click Here to Login
+            </Link>
           </div>
 
           <Image
