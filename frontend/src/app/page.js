@@ -1,15 +1,17 @@
 import Image from "next/image";
+import Link from "next/link";
+
 import Button from "@/components/Button";
 
 export default function Home() {
   return (
     <div className="text-black">
-      <div className="max-w-8xl mx-auto mt-24 px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center items-center">
+      <div className="max-w-8xl mx-auto mt-6 px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 justify-items-center items-center">
           <Image
             alt="Cooking"
             src="/cooking1.png"
-            width={400}
+            width={500}
             height={400}
             className="mt-4"
           />
@@ -22,23 +24,47 @@ export default function Home() {
               Preppr empowers local chefs and home cooks to feed their
               neighborhoods with love, not mass production
             </span>
-            <Button className="w-full text-xl font-bold">Join Preppr</Button>
+            <Link
+              href="#"
+              className="w-full text-xl font-bold p-4 bg-[#82FF82] hover:bg-[#76E7A4] text-black rounded-full"
+            >
+              Join Preppr
+            </Link>
+            <Link href="#">Already have an account? Click Here to Login</Link>
           </div>
 
           <Image
             alt="Cooking"
             src="/cooking5.png"
+            width={550}
+            height={400}
+            className="hidden md:block"
+          />
+          <Image
+            alt="Cooking"
+            src="/cooking2.png"
             width={400}
             height={400}
-            className="mt-4"
+            className="hidden md:block"
           />
-          <Image alt="Cooking" src="/cooking2.png" width={400} height={400} />
-          <Image alt="Cooking" src="/cooking3.png" width={500} height={500} />
-          <Image alt="Cooking" src="/cooking4.png" width={400} height={400} />
+          <Image
+            alt="Cooking"
+            src="/cooking3.png"
+            width={550}
+            height={400}
+            className="hidden md:block"
+          />
+          <Image
+            alt="Cooking"
+            src="/cooking4.png"
+            width={400}
+            height={400}
+            className="hidden md:block"
+          />
         </div>
       </div>
 
-      <section id="how" className="mx-auto max-w-6xl px-6 py-12">
+      <section id="how" className="mx-auto max-w-8xl px-6 py-6">
         <div className="grid md:grid-cols-3 gap-6">
           <Feature
             title="Cooked Near You"
