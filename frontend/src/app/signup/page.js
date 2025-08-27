@@ -3,6 +3,9 @@ import { useState } from "react";
 
 import UserInputContainer from "@/components/UserInputContainer";
 
+import { HiOutlineMail, HiOutlineMailOpen } from "react-icons/hi";
+import { RiLockPasswordFill } from "react-icons/ri";
+
 export default function Signup() {
   const [data, setData] = useState({
     email: "",
@@ -35,6 +38,10 @@ export default function Signup() {
     }
   };
 
+  const handleResend = () => {
+    console.log("resend tried");
+  };
+
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
       {step === 1 && (
@@ -51,6 +58,7 @@ export default function Signup() {
           value={data.email}
           onClick={handleNext}
           error={error}
+          icon={<HiOutlineMail size={100} />}
         />
       )}
       {step === 2 && (
@@ -65,6 +73,8 @@ export default function Signup() {
           value={data.code}
           onClick={handleNext}
           error={error}
+          icon={<HiOutlineMailOpen size={100} />}
+          handleResend={handleResend}
         />
       )}
       {step === 3 && (
@@ -80,6 +90,7 @@ export default function Signup() {
           confirmValue={data.confirmPassword}
           onClick={handleNext}
           error={error}
+          icon={<RiLockPasswordFill size={100} />}
         />
       )}
     </div>
