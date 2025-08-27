@@ -47,15 +47,20 @@ export default function Signup() {
       {step === 1 && (
         /* Optional Values => (placeholder, linkText, href, buttonLabel, value, onChange, onClick, error) */
         <UserInputContainer
-          name="email"
-          type="email"
+          inputs={[
+            {
+              label: "Email",
+              name: "email",
+              type: "email",
+              placeholder: "you@gmail.com",
+              value: data.email,
+              onChange: handleChange,
+            },
+          ]}
           title="Enter your Email"
-          placeholder="you@email.com"
           linkText="Already have a account? Click Here."
           href="/login"
           buttonLabel="Continue"
-          onChange={handleChange}
-          value={data.email}
           onClick={handleNext}
           error={error}
           icon={<HiOutlineMail size={100} />}
@@ -63,14 +68,19 @@ export default function Signup() {
       )}
       {step === 2 && (
         <UserInputContainer
-          name="code"
-          type="number"
+          inputs={[
+            {
+              label: "",
+              name: "code",
+              type: "number",
+              placeholder: "123456",
+              value: data.code,
+              onChange: handleChange,
+            },
+          ]}
           title="Verify Email"
           subTitle="Please check your email for a 6-digit PIN"
-          placeholder="123456"
           buttonLabel="Verify"
-          onChange={handleChange}
-          value={data.code}
           onClick={handleNext}
           error={error}
           icon={<HiOutlineMailOpen size={100} />}
@@ -79,15 +89,26 @@ export default function Signup() {
       )}
       {step === 3 && (
         <UserInputContainer
-          name="password"
-          confirmName="confirmPassword"
-          type="password"
+          inputs={[
+            {
+              label: "Password",
+              name: "password",
+              type: "text",
+              placeholder: "****************",
+              value: data.password,
+              onChange: handleChange,
+            },
+            {
+              label: "Confirm Password",
+              name: "confimPassword",
+              type: "text",
+              placeholder: "****************",
+              value: data.confirmPassword,
+              onChange: handleChange,
+            },
+          ]}
           title="Create Password"
-          placeholder="********"
           buttonLabel="Submit"
-          onChange={handleChange}
-          value={data.password}
-          confirmValue={data.confirmPassword}
           onClick={handleNext}
           error={error}
           icon={<RiLockPasswordFill size={100} />}
