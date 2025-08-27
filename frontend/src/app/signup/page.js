@@ -93,15 +93,15 @@ export default function Signup() {
             {
               label: "Password",
               name: "password",
-              type: "text",
+              type: "password",
               placeholder: "****************",
               value: data.password,
               onChange: handleChange,
             },
             {
               label: "Confirm Password",
-              name: "confimPassword",
-              type: "text",
+              name: "confirmPassword",
+              type: "password",
               placeholder: "****************",
               value: data.confirmPassword,
               onChange: handleChange,
