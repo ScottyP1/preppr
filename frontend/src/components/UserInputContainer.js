@@ -12,7 +12,6 @@ const UserInputContainer = ({
   icon,
   errors,
 }) => {
-  console.log(errors);
   return (
     <div className="flex flex-col justify-center items-center bg-white/40 p-6 rounded-lg gap-4 text-black md:min-w-[30rem]">
       {icon}

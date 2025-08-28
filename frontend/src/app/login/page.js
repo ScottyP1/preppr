@@ -18,6 +18,7 @@ export default function Login() {
   const handleSubmit = async () => {
     try {
       const res = await login(data);
+      console.log(res);
     } catch (err) {
       setErrors(err);
     }
