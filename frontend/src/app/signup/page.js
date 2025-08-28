@@ -1,11 +1,10 @@
 "use client";
-import { useState, use } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import UserInputContainer from "@/components/UserInputContainer";
 
-import { HiOutlineMail, HiOutlineMailOpen } from "react-icons/hi";
-import { RiLockPasswordFill } from "react-icons/ri";
+import { HiOutlineMail } from "react-icons/hi";
 
 import { signUp } from "@/api/authRoutes";
 
@@ -13,12 +12,10 @@ export default function Signup() {
   const [data, setData] = useState({
     email: "",
     password: "",
-    confirmPassword: "",
-    // code: "",
+    password_confirm: "",
   });
 
-  const [error, setError] = useState("");
-  // const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState({});
   const router = useRouter();
 
   const handleChange = (evt) => {
@@ -26,41 +23,16 @@ export default function Signup() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  //   api/register_user
-  //   const handleNext = async () => {
-  //     setError(null);
-  // if (step === 1) {
-  //   if (!data.email) return setError("Please enter your email.");
-  //   setStep(2);
-  // } else if (step === 2) {
-  //   if (!data.code) return setError("Enter the 6-digit code.");
-  //   setStep(3);
-  // } else if (step === 3) {
-  //   if (data.password.length < 8)
-  //     return setError("Password must be 8+ characters.");
-  //   if (data.password !== data.confirmPassword)
-  //     return setError("Passwords do not match.");
-  //   console.log("SUBMIT:", data);
-  // }
-  //   };
-
-  //   const handleResend = () => {
-  //     console.log("resend tried");
-  //   };
-
   const handleSubmit = async () => {
-    if (data.password !== data.confirmPassword) {
-      setError("Passwords Must Match");
+    if (data.password !== data.password_confirm) {
+      setErrors("Passwords must match");
       return;
     }
-
     try {
-      const res = await signUp(data);
-      console.log("Registered:", res);
+      await signUp(data);
       router.push("/login");
     } catch (err) {
-      console.error("Signup failed:", err);
-      setError(err.data);
+      setErrors(err);
     }
   };
 
@@ -81,95 +53,26 @@ export default function Signup() {
             name: "password",
             type: "password",
             placeholder: "*********",
-            value: data.email,
+            value: data.password,
             onChange: handleChange,
           },
           {
             label: "Confirm Password",
-            name: "confirmPassword",
+            name: "password_confirm",
             type: "password",
             placeholder: "*********",
-            value: data.email,
+            value: data.password_confirm,
             onChange: handleChange,
           },
         ]}
-        title="Enter your Email"
+        title="Signup"
         linkText="Already have a account? Click Here."
         href="/login"
         buttonLabel="Submit"
         onClick={handleSubmit}
-        error={error}
+        errors={errors}
         icon={<HiOutlineMail size={100} />}
       />
-      {/* {step === 1 && (
-        <UserInputContainer
-          inputs={[
-            {
-              label: "Email",
-              name: "email",
-              type: "email",
-              placeholder: "you@gmail.com",
-              value: data.email,
-              onChange: handleChange,
-            },
-          ]}
-          title="Enter your Email"
-          linkText="Already have a account? Click Here."
-          href="/login"
-          buttonLabel="Continue"
-          onClick={handleNext}
-          error={error}
-          icon={<HiOutlineMail size={100} />}
-        />
-      )}
-      {step === 2 && (
-        <UserInputContainer
-          inputs={[
-            {
-              label: "",
-              name: "code",
-              type: "number",
-              placeholder: "123456",
-              value: data.code,
-              onChange: handleChange,
-            },
-          ]}
-          title="Verify Email"
-          subTitle="Please check your email for a 6-digit PIN"
-          buttonLabel="Verify"
-          onClick={handleNext}
-          error={error}
-          icon={<HiOutlineMailOpen size={100} />}
-          handleResend={handleResend}
-        />
-      )}
-      {step === 3 && (
-        <UserInputContainer
-          inputs={[
-            {
-              label: "Password",
-              name: "password",
-              type: "password",
-              placeholder: "****************",
-              value: data.password,
-              onChange: handleChange,
-            },
-            {
-              label: "Confirm Password",
-              name: "confirmPassword",
-              type: "password",
-              placeholder: "****************",
-              value: data.confirmPassword,
-              onChange: handleChange,
-            },
-          ]}
-          title="Create Password"
-          buttonLabel="Submit"
-          onClick={handleNext}
-          error={error}
-          icon={<RiLockPasswordFill size={100} />}
-        />
-      )} */}
     </div>
   );
 }
