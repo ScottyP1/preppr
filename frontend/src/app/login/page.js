@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import UserInputContainer from "@/components/UserInputContainer";
 import { HiOutlineMail } from "react-icons/hi";
+import { login } from "@/api/authRoutes";
 
 export default function Login() {
   const [data, setData] = useState({ email: "", password: "" });
@@ -14,8 +15,14 @@ export default function Login() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log(data);
+  const handleSubmit = async () => {
+    try {
+      const res = await login(data);
+      console.log("logged in:", res);
+    } catch (err) {
+      console.error("login failed:", err);
+      setError(err.data);
+    }
   };
 
   return (
