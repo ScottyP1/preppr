@@ -38,14 +38,27 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # third party apps
+    "corsheaders",
     "rest_framework",
     # Local
     "user_app",
     "store_app",
 ]
+# DEV: prints emails to console so you can test immediately
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@yourdomain.com"
+
+# PROD EXAMPLE (SMTP)
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.sendgrid.net"          # or SES/Gmail, etc.
+# EMAIL_HOST_USER = "apikey"
+# EMAIL_HOST_PASSWORD = "<your-secret>"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -134,3 +147,19 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
+
+# CORS/CSRF for Next.js frontend (dev)
+# Allow local Next.js origins to call the API and perform preflight
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# If you use cookie-based auth, also allow credentials
+# CORS_ALLOW_CREDENTIALS = True
+
+# Needed for POSTing from these origins when CSRF is enforced (e.g., admin, session views)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]

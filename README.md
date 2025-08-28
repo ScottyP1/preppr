@@ -1,0 +1,182 @@
+# Preppr API Guide
+
+This document summarizes the backend API for frontend integration: endpoints, payloads, auth, and typical usage flows.
+
+- Base API prefix: `/api/`
+- Auth: JWT (access/refresh)
+- Content type: send/receive JSON (`Content-Type: application/json`)
+- Auth header: `Authorization: Bearer <access_token>`
+
+## Authentication
+
+- POST `/api/auth/token/`
+  - Purpose: Obtain JWT access/refresh tokens.
+  - Body: `{ "username": "<email>", "password": "<password>" }`
+    - Note: login field is `username`. Registration sets `username = email`.
+  - Response: `{ "access": "...", "refresh": "..." }`
+
+- POST `/api/auth/token/refresh/`
+  - Purpose: Refresh an access token.
+  - Body: `{ "refresh": "<refresh_token>" }`
+  - Response: `{ "access": "..." }`
+
+## Registration + Email Verification
+
+- POST `/api/auth/register/`
+  - Purpose: Create a new account (inactive until email verification). Automatically creates a Buyer or Seller profile.
+  - Body:
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "StrongPassw0rd!",
+      "password_confirm": "StrongPassw0rd!",
+      "role": "buyer" | "seller",
+      "first_name": "Optional",
+      "last_name": "Optional"
+    }
+    ```
+  - Response: `{ "user": { ... }, "detail": "Account created. Check your email to verify your address." }`
+
+- GET `/api/auth/register/verify/<uidb64>/<token>/`
+  - Purpose: Activate the account from the email link.
+  - Auth: Not required.
+  - Response: `200` with `{ "detail": "Email verified. You can now sign in." }` or `400` if invalid/expired.
+
+- POST `/api/auth/register/resend/`
+  - Purpose: Resend verification email.
+  - Unauthenticated body: `{ "email": "user@example.com" }`
+  - Authenticated: no body required; resends for current (inactive) user.
+  - Response: `200` with `{ "detail": "Verification email sent." }`
+
+## Current User (me)
+
+All require `Authorization: Bearer <access>`.
+
+- GET `/api/me/user/`
+  - Purpose: Fetch the authenticated user.
+  - Response: `{ "id", "username", "email", "role", "first_name", "last_name" }`
+
+- GET/PUT/PATCH `/api/me/buyer_profile/`
+  - Role: only for users with `role = buyer`.
+  - Fields: `{ id, user, allergies, preference, location, address, zipcode, favorite_stall }`
+  - Update example (PATCH):
+    ```json
+    { "zipcode": 60606, "favorite_stall": 12 }
+    ```
+
+- GET/PUT/PATCH `/api/me/seller_profile/`
+  - Role: only for users with `role = seller`.
+  - Fields: `{ id, user, location, address, zipcode, stall }`
+  - Update example (PATCH):
+    ```json
+    { "address": "1 Main St", "zipcode": 94105, "stall": 3 }
+    ```
+
+## Public Profiles (read-only)
+
+Require `Authorization: Bearer <access>`.
+
+- GET `/api/buyers/` and GET `/api/buyers/{id}/`
+  - Lists or retrieves buyer profiles. Use `/me/buyer_profile/` to modify.
+
+- GET `/api/sellers/` and GET `/api/sellers/{id}/`
+  - Lists or retrieves seller profiles. Use `/me/seller_profile/` to modify.
+
+## Stalls
+
+Resource representing a seller’s stall/inventory.
+
+- Model fields: `{ id, product, location, quantity, radius_m }`
+- Permissions: Read is public. Create/Update/Delete require authenticated seller (`role = seller`).
+
+Endpoints via DRF ViewSet:
+
+- GET `/api/stalls/` — list (public)
+- POST `/api/stalls/` — create (seller)
+  ```json
+  { "product": "Apples", "location": "Ferry Plaza", "quantity": 20, "radius_m": 1000 }
+  ```
+- GET `/api/stalls/{id}/` — retrieve (public)
+- PUT/PATCH `/api/stalls/{id}/` — update (seller)
+- DELETE `/api/stalls/{id}/` — delete (seller)
+
+Custom action:
+
+- POST `/api/stalls/{id}/set_quantity/`
+  - Purpose: Quick way for sellers to update quantity.
+  - Body: `{ "quantity": 15 }`
+  - Response: the updated stall object.
+
+## Typical Flows
+
+Buyer
+- Register with `role = buyer` → verify email via link.
+- Login → store `access`/`refresh`.
+- Fetch `/api/me/user/` to confirm identity.
+- GET `/api/me/buyer_profile/` → PATCH fields (e.g., `zipcode`, `favorite_stall`).
+- Browse stalls: GET `/api/stalls/` or `/api/stalls/{id}/` (no auth required for read).
+
+Seller
+- Register with `role = seller` → verify email.
+- Login → store `access`/`refresh`.
+- Fetch `/api/me/user/` and `/api/me/seller_profile/`.
+- Create a stall: POST `/api/stalls/`.
+- Link profile to the stall (optional): PATCH `/api/me/seller_profile/` with `{"stall": <stall_id>}`.
+- Update inventory: POST `/api/stalls/{id}/set_quantity/` or PATCH `/api/stalls/{id}/`.
+
+## Validation Notes
+
+- Zip codes must be numeric and 0–99999 (`buyer_profile.zipcode`, `seller_profile.zipcode`).
+- Duplicate registration emails are rejected.
+- Inactive accounts cannot obtain tokens until verified.
+
+## Status Codes (common)
+
+- `200 OK`: Successful GET/verify/update
+- `201 Created`: Successful resource creation (e.g., register, create stall)
+- `400 Bad Request`: Validation errors (e.g., invalid zipcode, bad payload)
+- `401 Unauthorized`: Missing/invalid JWT; inactive user login
+- `403 Forbidden`: Role mismatch (e.g., buyer hitting seller-only update)
+- `404 Not Found`: Resource not found (or resend for unknown email)
+
+## Quick cURL Examples
+
+- Login:
+  ```bash
+  curl -X POST http://localhost:8000/api/auth/token/ \
+    -H 'Content-Type: application/json' \
+    -d '{"username":"user@example.com","password":"StrongPassw0rd!"}'
+  ```
+
+- Get current user:
+  ```bash
+  curl http://localhost:8000/api/me/user/ \
+    -H 'Authorization: Bearer <access>'
+  ```
+
+- Update buyer profile (zipcode):
+  ```bash
+  curl -X PATCH http://localhost:8000/api/me/buyer_profile/ \
+    -H 'Authorization: Bearer <access>' \
+    -H 'Content-Type: application/json' \
+    -d '{"zipcode":60606}'
+  ```
+
+- Create stall (seller):
+  ```bash
+  curl -X POST http://localhost:8000/api/stalls/ \
+    -H 'Authorization: Bearer <access>' \
+    -H 'Content-Type: application/json' \
+    -d '{"product":"Apples","location":"Ferry Plaza","quantity":20,"radius_m":1000}'
+  ```
+
+- Set stall quantity (seller):
+  ```bash
+  curl -X POST http://localhost:8000/api/stalls/3/set_quantity/ \
+    -H 'Authorization: Bearer <access>' \
+    -H 'Content-Type: application/json' \
+    -d '{"quantity":15}'
+  ```
+
+---
+If you want this split into Swagger/OpenAPI or Postman collection, I can generate that too.
