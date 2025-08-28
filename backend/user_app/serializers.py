@@ -50,12 +50,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data["username"] = email
         user = User.objects.create_user(**validated_data)
 
-        # Auto-create profile for role
+        # ensure inactive until verified
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+
         if user.role == User.Roles.BUYER:
             BuyerProfile.objects.create(user=user)
         elif user.role == User.Roles.SELLER:
             SellerProfile.objects.create(user=user)
         return user
+
 
 
 class UserSerializer(serializers.ModelSerializer):
