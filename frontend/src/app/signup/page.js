@@ -28,6 +28,7 @@ export default function Signup() {
       setErrors("Passwords must match");
       return;
     }
+
     try {
       await signUp(data);
       router.push("/login");

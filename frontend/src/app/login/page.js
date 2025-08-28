@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import UserInputContainer from "@/components/UserInputContainer";
 import { HiOutlineMail } from "react-icons/hi";
@@ -9,6 +10,7 @@ import { login } from "@/services/authRoutes";
 export default function Login() {
   const [data, setData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({});
+  const router = useRouter();
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -18,7 +20,7 @@ export default function Login() {
   const handleSubmit = async () => {
     try {
       const res = await login(data);
-      console.log(res);
+      router.push("/market");
     } catch (err) {
       setErrors(err);
     }

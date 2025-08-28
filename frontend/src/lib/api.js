@@ -10,7 +10,7 @@ export const api = axios.create({
 const getAccess = () => localStorage.getItem("access");
 const getRefresh = () => localStorage.getItem("refresh");
 
-const setTokens = (access, refresh) => {
+export const setTokens = (access, refresh) => {
   if (access) {
     localStorage.setItem("access", access);
   }
