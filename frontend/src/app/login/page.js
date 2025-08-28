@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import UserInputContainer from "@/components/UserInputContainer";
 import { HiOutlineMail } from "react-icons/hi";
-import { login } from "@/api/authRoutes";
+import { login } from "@/services/authRoutes";
 
 export default function Login() {
   const [data, setData] = useState({ username: "", password: "" });

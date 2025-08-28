@@ -6,7 +6,7 @@ import UserInputContainer from "@/components/UserInputContainer";
 
 import { HiOutlineMail } from "react-icons/hi";
 
-import { signUp } from "@/api/authRoutes";
+import { signUp } from "@/services/authRoutes";
 
 export default function Signup() {
   const [data, setData] = useState({
