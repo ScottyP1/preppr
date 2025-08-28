@@ -1,10 +1,8 @@
-import axios from "axios";
-
-const BASE_URL = "http://localhost:8000/api/auth";
+import { api, setTokens } from "@/lib/api";
 
 export const signUp = async (userData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/register/`, userData);
+    const response = await api.post("/register/", userData);
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -13,7 +11,10 @@ export const signUp = async (userData) => {
 
 export const login = async (userData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/token/`, userData);
+    const response = await api.post("/token/", userData);
+    const { access, refresh } = response.data;
+
+    setTokens(access, refresh);
     return response.data;
   } catch (error) {
     throw error.response.data;
