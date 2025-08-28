@@ -1,51 +1,107 @@
 "use client";
-import { useState } from "react";
+import { useState, use } from "react";
+import { useRouter } from "next/navigation";
 
 import UserInputContainer from "@/components/UserInputContainer";
 
 import { HiOutlineMail, HiOutlineMailOpen } from "react-icons/hi";
 import { RiLockPasswordFill } from "react-icons/ri";
 
+import { signUp } from "@/api/authRoutes";
+
 export default function Signup() {
   const [data, setData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
-    code: "",
+    // code: "",
   });
+
   const [error, setError] = useState("");
-  const [step, setStep] = useState(1);
+  // const [step, setStep] = useState(1);
+  const router = useRouter();
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNext = async () => {
-    setError(null);
-    if (step === 1) {
-      if (!data.email) return setError("Please enter your email.");
-      setStep(2);
-    } else if (step === 2) {
-      if (!data.code) return setError("Enter the 6-digit code.");
-      setStep(3);
-    } else if (step === 3) {
-      if (data.password.length < 8)
-        return setError("Password must be 8+ characters.");
-      if (data.password !== data.confirmPassword)
-        return setError("Passwords do not match.");
-      console.log("SUBMIT:", data);
-    }
-  };
+  //   api/register_user
+  //   const handleNext = async () => {
+  //     setError(null);
+  // if (step === 1) {
+  //   if (!data.email) return setError("Please enter your email.");
+  //   setStep(2);
+  // } else if (step === 2) {
+  //   if (!data.code) return setError("Enter the 6-digit code.");
+  //   setStep(3);
+  // } else if (step === 3) {
+  //   if (data.password.length < 8)
+  //     return setError("Password must be 8+ characters.");
+  //   if (data.password !== data.confirmPassword)
+  //     return setError("Passwords do not match.");
+  //   console.log("SUBMIT:", data);
+  // }
+  //   };
 
-  const handleResend = () => {
-    console.log("resend tried");
+  //   const handleResend = () => {
+  //     console.log("resend tried");
+  //   };
+
+  const handleSubmit = async () => {
+    if (data.password !== data.confirmPassword) {
+      setError("Passwords Must Match");
+      return;
+    }
+
+    try {
+      const res = await signUp(data);
+      console.log("Registered:", res);
+      router.push("/login");
+    } catch (err) {
+      console.error("Signup failed:", err);
+      setError(err.data);
+    }
   };
 
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
-      {step === 1 && (
-        /* Optional Values => (placeholder, linkText, href, buttonLabel, value, onChange, onClick, error) */
+      <UserInputContainer
+        inputs={[
+          {
+            label: "Email",
+            name: "email",
+            type: "email",
+            placeholder: "you@gmail.com",
+            value: data.email,
+            onChange: handleChange,
+          },
+          {
+            label: "Password",
+            name: "password",
+            type: "password",
+            placeholder: "*********",
+            value: data.email,
+            onChange: handleChange,
+          },
+          {
+            label: "Confirm Password",
+            name: "confirmPassword",
+            type: "password",
+            placeholder: "*********",
+            value: data.email,
+            onChange: handleChange,
+          },
+        ]}
+        title="Enter your Email"
+        linkText="Already have a account? Click Here."
+        href="/login"
+        buttonLabel="Submit"
+        onClick={handleSubmit}
+        error={error}
+        icon={<HiOutlineMail size={100} />}
+      />
+      {/* {step === 1 && (
         <UserInputContainer
           inputs={[
             {
@@ -113,7 +169,7 @@ export default function Signup() {
           error={error}
           icon={<RiLockPasswordFill size={100} />}
         />
-      )}
+      )} */}
     </div>
   );
 }
