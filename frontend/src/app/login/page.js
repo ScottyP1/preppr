@@ -7,8 +7,8 @@ import { HiOutlineMail } from "react-icons/hi";
 import { login } from "@/api/authRoutes";
 
 export default function Login() {
-  const [data, setData] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [data, setData] = useState({ username: "", password: "" });
+  const [errors, setErrors] = useState({});
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -18,10 +18,9 @@ export default function Login() {
   const handleSubmit = async () => {
     try {
       const res = await login(data);
-      console.log("logged in:", res);
+      console.log(res);
     } catch (err) {
-      console.error("login failed:", err);
-      setError(err.data);
+      setErrors(err);
     }
   };
 
@@ -31,10 +30,10 @@ export default function Login() {
         inputs={[
           {
             label: "Email",
-            name: "email",
+            name: "username",
             type: "text",
             placeholder: "you@email.com",
-            value: data.email,
+            value: data.username,
             onChange: handleChange,
           },
           {
@@ -46,14 +45,14 @@ export default function Login() {
             onChange: handleChange,
           },
         ]}
-        title="Enter your Email"
+        title="Login"
         placeholder="you@email.com"
         linkText="Dont have a account? Click Here."
         href="/signup"
-        buttonLabel="Continue"
+        buttonLabel="Login"
         onChange={handleChange}
         value={data.email}
-        error={error}
+        errors={errors}
         icon={<HiOutlineMail size={100} />}
         onClick={handleSubmit}
       />
