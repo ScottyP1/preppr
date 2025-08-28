@@ -43,6 +43,17 @@ INSTALLED_APPS = [
     "user_app",
     "store_app",
 ]
+# DEV: prints emails to console so you can test immediately
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@yourdomain.com"
+
+# PROD EXAMPLE (SMTP)
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.sendgrid.net"          # or SES/Gmail, etc.
+# EMAIL_HOST_USER = "apikey"
+# EMAIL_HOST_PASSWORD = "<your-secret>"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

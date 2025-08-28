@@ -1,45 +1,109 @@
-from rest_framework import viewsets, mixins, status
-from rest_framework.response import Response
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+# user_app/views.py
+
 from django.db import transaction
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+
+from rest_framework import viewsets, mixins, status
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
 from .models import User, BuyerProfile, SellerProfile
 from .serializers import (
+    UserRegistrationSerializer,
     UserSerializer,
     BuyerProfileSerializer,
     SellerProfileSerializer,
-    UserRegistrationSerializer,
 )
-from .permissions import IsSelfProfile
+from .tokens import email_verification_token
+from .email_utils import send_verification_email
 
 
 class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
-    ViewSet for user registration.
-    Allows POST to create new user accounts.
-    """
+    Router-friendly registration + email verification.
 
+    Routes (when registered as router.register("auth/register", ...)):
+
+    - POST   /api/auth/register/                         -> create()
+    - GET    /api/auth/register/verify/<uidb64>/<token>/ -> verify()
+    - POST   /api/auth/register/resend/                  -> resend()
+    """
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
-    permission_classes = [AllowAny]  # Allow unauthenticated users to register
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        """Handle user registration"""
+        """Register a new user, set inactive, send verification email."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Use transaction to ensure profile is created if user creation succeeds
         with transaction.atomic():
-            user = serializer.save()
+            user = serializer.save()  # serializer creates Buyer/Seller profile
+            # Ensure account is inactive until email is verified
+            if user.is_active:
+                user.is_active = False
+                user.save(update_fields=["is_active"])
+            send_verification_email(request, user)
 
-        # Return user data (without password) and success message
-        response_data = {
+        data = {
             "user": UserSerializer(user).data,
-            "message": "User registered successfully",
+            "detail": "Account created. Check your email to verify your address.",
         }
+        return Response(data, status=status.HTTP_201_CREATED)
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path=r"verify/(?P<uidb64>[^/]+)/(?P<token>[^/]+)",
+        permission_classes=[AllowAny],
+    )
+    def verify(self, request, uidb64=None, token=None):
+        """Activate an account if the token is valid."""
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except Exception:
+            return Response({"detail": "Invalid verification link."}, status=400)
+
+        if email_verification_token.check_token(user, token):
+            if not user.is_active:
+                user.is_active = True
+                user.save(update_fields=["is_active"])
+            return Response({"detail": "Email verified. You can now sign in."}, status=200)
+
+        return Response({"detail": "Link expired or invalid."}, status=400)
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="resend",
+        permission_classes=[AllowAny],
+    )
+    def resend(self, request):
+        """
+        Resend a verification email.
+
+        - If authenticated: resends for the current user (if inactive).
+        - If unauthenticated: POST {"email": "<address>"} to resend.
+        """
+        user = None
+        if request.user and request.user.is_authenticated:
+            user = request.user
+        else:
+            email = request.data.get("email")
+            if email:
+                user = User.objects.filter(email__iexact=email).first()
+
+        if not user:
+            return Response({"detail": "User not found."}, status=404)
+
+        if user.is_active:
+            return Response({"detail": "Account is already verified."}, status=400)
+
+        send_verification_email(request, user)
+        return Response({"detail": "Verification email sent."}, status=200)
 
 
 class MeViewSet(viewsets.ViewSet):
@@ -79,9 +143,7 @@ class BuyerProfileViewSet(
 ):
     queryset = BuyerProfile.objects.select_related("user", "favorite_stall").all()
     serializer_class = BuyerProfileSerializer
-    permission_classes = [
-        IsAuthenticated
-    ]  # listing is okay; modify via /me endpoints only
+    permission_classes = [IsAuthenticated]  # read-only listing; modify via /me endpoints
 
 
 class SellerProfileViewSet(
