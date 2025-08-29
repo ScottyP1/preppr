@@ -84,9 +84,15 @@ Require `Authorization: Bearer <access>`.
 
 ## Stalls
 
-Resource representing a seller’s stall/inventory.
+Resource representing a seller’s stall/inventory. Now includes richer fields and buyer actions.
 
-- Model fields: `{ id, product, location, quantity, radius_m }`
+- Model fields include:
+  - Basics: `product`, `description`, `image_url`
+  - Location/availability: `location`, `quantity`, `radius_m`
+  - Pricing/rating: `price_cents`, `price_level (1-4)`, `average_rating`, `rating_count`
+  - Nutrition: `calories`, `fat_g`, `carbs_g`
+  - Labels: `tags[]`, `allergens[]`
+  - Details: `options[]`, `includes[]`, `special_requests_allowed`
 - Permissions: Read is public. Create/Update/Delete require authenticated seller (`role = seller`).
 
 Endpoints via DRF ViewSet:
@@ -106,6 +112,20 @@ Custom action:
   - Purpose: Quick way for sellers to update quantity.
   - Body: `{ "quantity": 15 }`
   - Response: the updated stall object.
+
+- POST `/api/stalls/{id}/favorite/` (buyer)
+  - Purpose: Mark this stall as the buyer’s favorite.
+  - Auth: buyer JWT required.
+  - Response: `{ "detail": "Favorited." }`
+
+- POST `/api/stalls/{id}/request/` (buyer)
+  - Purpose: Create a special request for a stall (e.g., “No asparagus”).
+  - Body: `{ "note": "No asparagus" }`
+  - Response: `201` with the created request.
+
+Query params:
+- `?tags=gluten-free,vegan` — filter to stalls that match any of the tag names
+- `?allergens_exclude=fish,nuts` — exclude stalls that include any of the named allergens
 
 ## Typical Flows
 

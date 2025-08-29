@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # third party apps
     "corsheaders",
     "rest_framework",
+    "rest_framework_simplejwt",
     # Local
     "user_app",
     "store_app",
