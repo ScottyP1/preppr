@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useRouter } from "next/navigation";
 
+import { AuthContext } from "@/context/AuthContext";
 import UserInputContainer from "@/components/UserInputContainer";
 import { HiOutlineMail } from "react-icons/hi";
-import { login } from "@/services/authRoutes";
 
 export default function Login() {
+  const { login } = useContext(AuthContext);
   const [data, setData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({});
   const router = useRouter();
@@ -52,8 +53,6 @@ export default function Login() {
         linkText="Dont have a account? Click Here."
         href="/signup"
         buttonLabel="Login"
-        onChange={handleChange}
-        value={data.email}
         errors={errors}
         icon={<HiOutlineMail size={100} />}
         onClick={handleSubmit}
