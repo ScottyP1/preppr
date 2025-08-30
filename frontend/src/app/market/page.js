@@ -61,13 +61,20 @@ const demoData = [
 
 export default function MarketPage() {
   const { user, loading, handleUpdateUser } = useContext(AuthContext);
+  const [filters, setFilters] = useState({
+    zip: "",
+    categories: [],
+    radius: 10,
+  });
   const [open, setOpen] = useState(false);
 
+  // Conditional to render Profile Modal
   const needsProfile = useMemo(() => {
     if (!user) return false;
     return !user.name || !user.address || !user.zip;
   }, [user]);
 
+  // Used to display user modal
   useEffect(() => {
     if (loading || !user) return;
 
@@ -80,6 +87,7 @@ export default function MarketPage() {
     }
   }, [loading, user, needsProfile]);
 
+  // Handle User modal update
   const handleSubmit = async (form) => {
     try {
       await handleUpdateUser(form);
@@ -90,16 +98,44 @@ export default function MarketPage() {
     }
   };
 
+  // Handle the filterbar inputs
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFilter = () => {
+    console.log(filters);
+  };
   return (
     <div className="p-6">
-      <FilterBar />
+      {/* Top level filter Bar */}
+      <FilterBar
+        onClick={handleFilter}
+        handleChange={handleChange}
+        inputs={[
+          {
+            name: "zip",
+            placeholder: "Enter Zip",
+            value: filters.zip,
+            type: "number",
+          },
+        ]}
+      />
 
+      {/* Map thru all demo data and render FoodCards */}
       <div className="grid grid-cols-3 place-items-center gap-6 mt-12">
         {demoData.map((item) => {
-          return <FoodCard {...item} key={item.id} />;
+          return (
+            <FoodCard {...item} key={item.id} handleChange={handleChange} />
+          );
         })}
       </div>
 
+      {/* Appears after login/signup to prompt user to finish setting up account/ sets localStorage on response */}
       <ProfileModal
         open={open}
         onClose={() => setOpen(false)}
