@@ -57,13 +57,29 @@ const demoData = [
     preppr: true,
     tags: ["Pizza", "Cheese"],
   },
+  {
+    id: 7,
+    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
+    title: "Avocado Toast",
+    price: "7.25",
+    preppr: false,
+    tags: ["Vegetarian", "Breakfast"],
+  },
+  {
+    id: 8,
+    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
+    title: "Pepperoni Pizza",
+    price: "13.50",
+    preppr: true,
+    tags: ["Pizza", "Cheese"],
+  },
 ];
 
 export default function MarketPage() {
   const { user, loading, handleUpdateUser } = useContext(AuthContext);
   const [filters, setFilters] = useState({
     zip: "",
-    categories: [],
+    category: "",
     radius: 10,
   });
   const [open, setOpen] = useState(false);
@@ -98,7 +114,7 @@ export default function MarketPage() {
     }
   };
 
-  // Handle the filterbar inputs
+  // // Handle the filterbar inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
@@ -110,8 +126,9 @@ export default function MarketPage() {
   const handleFilter = () => {
     console.log(filters);
   };
+
   return (
-    <div className="p-6">
+    <div className="pb-12">
       {/* Top level filter Bar */}
       <FilterBar
         onClick={handleFilter}
@@ -127,12 +144,10 @@ export default function MarketPage() {
       />
 
       {/* Map thru all demo data and render FoodCards */}
-      <div className="grid grid-cols-3 place-items-center gap-6 mt-12">
-        {demoData.map((item) => {
-          return (
-            <FoodCard {...item} key={item.id} handleChange={handleChange} />
-          );
-        })}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-12 px-4">
+        {demoData.map((item) => (
+          <FoodCard {...item} key={item.id} />
+        ))}
       </div>
 
       {/* Appears after login/signup to prompt user to finish setting up account/ sets localStorage on response */}

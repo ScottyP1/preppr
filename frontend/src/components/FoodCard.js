@@ -2,8 +2,14 @@ import Image from "next/image";
 
 const FoodCard = ({ id, image, title, price, preppr, tags }) => {
   return (
-    <div>
-      <Image src={image} height={200} width={400} className="rounded-t-xl" />
+    <div className="w-full max-w-xs mx-auto">
+      <Image
+        src={image}
+        height={200}
+        width={400}
+        className="rounded-t-xl w-full object-cover"
+        alt="Image of food"
+      />
       <div className="bg-gray-500 p-2 rounded-b-xl">
         <div className="flex justify-between">
           <h1>{title}</h1>
@@ -33,7 +39,7 @@ export default FoodCard;
 const Tag = ({ label }) => {
   return (
     <div className="bg-green-500 rounded-lg px-2">
-      <span className="text-sm text-center">{label}</span>
+      <span className="text-xs">{label}</span>
     </div>
   );
 };
