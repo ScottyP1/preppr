@@ -8,12 +8,22 @@ import { HiOutlineMail } from "react-icons/hi";
 
 import { AuthContext } from "@/context/AuthContext";
 
+const AVATARS = [
+  "/avatar/chef1.png",
+  "/avatar/chef2.png",
+  "/avatar/chef3.png",
+  "/avatar/chef4.png",
+  "/avatar/chef5.png",
+  "/avatar/chef6.png",
+];
+
 export default function Signup() {
   const { register } = useContext(AuthContext);
   const [data, setData] = useState({
     email: "",
     password: "",
     password_confirm: "",
+    avatar: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -29,7 +39,6 @@ export default function Signup() {
       setErrors("Passwords must match");
       return;
     }
-
     try {
       await register(data);
       router.push("/login");
@@ -65,6 +74,14 @@ export default function Signup() {
             placeholder: "*********",
             value: data.password_confirm,
             onChange: handleChange,
+          },
+          {
+            label: "Select Avatar",
+            name: "avatar",
+            type: "avatar",
+            value: data.avatar,
+            onChange: handleChange,
+            options: AVATARS,
           },
         ]}
         title="Signup"
