@@ -12,6 +12,7 @@ import {
   apiRegister,
   apiGetUser,
   apiUpdateUser,
+  apiBecome_seller,
   apiRefresh,
   setTokens,
   clearTokens,
@@ -94,6 +95,7 @@ export function AuthProvider({ children }) {
       register: handleRegister,
       logout: handleLogout,
       update: handleUpdateUser,
+      toSeller: apiBecome_seller,
     }),
     [user, access, refresh, loading, handleLogin, handleRegister, handleLogout]
   );
