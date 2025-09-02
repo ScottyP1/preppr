@@ -1,14 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { AuthContext } from "@/context/AuthContext";
+import UserMenu from "./UserMenu";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // mobile hamburger
+  const [menuOpen, setMenuOpen] = useState(false); // user menu dropdown
+  const { user, logout } = useContext(AuthContext) || {};
+  const router = useRouter();
+
+  // Close user menu when hamburger opens
+  useEffect(() => {
+    if (open) setMenuOpen(false);
+  }, [open]);
+
+  // Close user menu on ESC
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  // placeholder icon - replace with user icon
+  const accountIcon = "🙍";
+
+  const handleMobileLogout = () => {
+    logout?.();
+    router.push("/login");
+  };
+
+  const DesktopNavLink = ({ href, children }) => (
+    <Link
+      href={href}
+      className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 hover:text-black"
+    >
+      {children}
+    </Link>
+  );
+
+  const MobileNavLink = ({ href, children }) => (
+    <Link
+      href={href}
+      className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 hover:text-black"
+    >
+      {children}
+    </Link>
+  );
 
   return (
-    <header className="bg-black/[.4]">
+    <header className="bg-black/[.4] relative">
       <nav
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         aria-label="Main navigation"
@@ -26,43 +72,36 @@ export default function Navbar() {
 
             {/* nav links */}
             <div className="hidden md:flex md:ml-6 md:space-x-2">
-              <Link
-                href="/"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100  hover:text-black"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100  hover:text-black"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 hover:text-black"
-              >
-                Contact
-              </Link>
+              {/* Home becomes Market when logged in */}
+              {user ? (
+                <DesktopNavLink href="/market">Market</DesktopNavLink>
+              ) : (
+                <DesktopNavLink href="/">Home</DesktopNavLink>
+              )}
+              <DesktopNavLink href="/about">About</DesktopNavLink>
+              <DesktopNavLink href="/contact">Contact</DesktopNavLink>
             </div>
           </div>
 
-          <div className="flex items-center">
-            <div className="hidden md:block">
-              <Link
-                href="/login"
-                className="px-4 py-2 border border-white text-white rounded-md text-sm font-medium hover:bg-indigo-50  hover:text-black"
-              >
-                Login
-              </Link>
-            </div>
+          <div className="flex items-center gap-2">
+            {/* Desktop Login (only when NOT logged in) */}
+            {!user && (
+              <div className="hidden md:block">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 border border-white text-white rounded-md text-sm font-medium hover:bg-indigo-50 hover:text-black"
+                >
+                  Login
+                </Link>
+              </div>
+            )}
 
             {/* Mobile: hamburger */}
             <button
               onClick={() => setOpen((s) => !s)}
               aria-expanded={open}
               aria-label="Toggle navigation"
-              className="ml-2 inline-flex items-center justify-center p-2 rounded-md md:hidden focus:outline-none"
+              className="ml-0 inline-flex items-center justify-center p-2 rounded-md md:hidden focus:outline-none"
             >
               {open ? (
                 /* Close icon */
@@ -98,6 +137,23 @@ export default function Navbar() {
                 </svg>
               )}
             </button>
+
+            {/* Account round button - always visible when logged in (to the right of burger on small screens) */}
+            {user && (
+              <div className="relative inline-block">
+                <button
+                  onClick={() => setMenuOpen((s) => !s)}
+                  aria-expanded={menuOpen}
+                  aria-haspopup="true"
+                  className="ml-2 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white text-black text-sm font-medium focus:outline-none hover:ring-2 hover:ring-white transition"
+                  title="Open account menu"
+                >
+                  <span aria-hidden>{accountIcon}</span>
+                </button>
+
+                {menuOpen && <UserMenu onClose={() => setMenuOpen(false)} />}
+              </div>
+            )}
           </div>
         </div>
 
@@ -105,30 +161,33 @@ export default function Navbar() {
         {open && (
           <div className="md:hidden mt-2 pb-4">
             <div className="space-y-1 px-2">
-              <Link
-                href="/"
-                className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100  hover:text-black"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 hover:text-black"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 hover:text-black"
-              >
-                Contact
-              </Link>
-              <Link
-                href="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium border border-white text-white hover:bg-indigo-50 hover:text-black"
-              >
-                Login
-              </Link>
+              {!user ? (
+                <MobileNavLink href="/">Home</MobileNavLink>
+              ) : (
+                <MobileNavLink href="/market">Market</MobileNavLink>
+              )}
+
+              <MobileNavLink href="/about">About</MobileNavLink>
+              <MobileNavLink href="/contact">Contact</MobileNavLink>
+
+              {/* Mobile Login or account-related links */}
+              {!user ? (
+                <Link
+                  href="/login"
+                  className="block px-3 py-2 rounded-md text-base font-medium border border-white text-white hover:bg-indigo-50 hover:text-black"
+                >
+                  Login
+                </Link>
+              ) : (
+                <>
+                  <button
+                    onClick={handleMobileLogout}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 hover:text-black"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
