@@ -86,6 +86,7 @@ class BuyerProfileSerializer(serializers.ModelSerializer):
             "address",
             "zipcode",
             "favorite_stall",
+            "avatar",
         ]
 
     def validate_zipcode(self, value):
@@ -117,6 +118,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
             "address",
             "zipcode",
             "stall",
+            "avatar",
         ]
 
     def validate_zipcode(self, value):
