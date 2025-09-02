@@ -132,6 +132,6 @@ export async function apiUpdateUser(payload) {
 }
 
 export async function apiBecome_seller() {
-  const { data } = await api.patch("me/become_seller/");
+  const { data } = await api.post("me/become_seller/");
   return data;
 }
