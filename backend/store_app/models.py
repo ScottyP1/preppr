@@ -59,3 +59,21 @@ class SpecialRequest(models.Model):
 
     def __str__(self):
         return f"Request by {self.buyer_profile_id} for stall {self.stall_id}"
+
+
+class StallImage(models.Model):
+    stall = models.ForeignKey("store_app.Stall", on_delete=models.CASCADE, related_name="images")
+    href = models.URLField()
+    alt_text = models.CharField(max_length=200, blank=True, default="")
+    position = models.PositiveIntegerField(default=0)
+    is_primary = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["position", "id"]
+        indexes = [
+            models.Index(fields=["stall", "position"]),
+            models.Index(fields=["stall", "is_primary"]),
+        ]
+
+    def __str__(self):
+        return f"StallImage(stall={self.stall_id}, pos={self.position})"
