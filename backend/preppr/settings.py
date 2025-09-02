@@ -41,9 +41,11 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     # Local
     "user_app",
     "store_app",
+    "cart_app",
 ]
 # DEV: prints emails to console so you can test immediately
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
