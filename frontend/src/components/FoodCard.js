@@ -1,8 +1,11 @@
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const FoodCard = ({ id, image, title, price, preppr, tags }) => {
+  const router = useRouter();
+
   return (
-    <div className="w-full max-w-xs mx-auto">
+    <div className="w-full mx-auto">
       <Image
         src={image}
         height={200}
@@ -26,7 +29,10 @@ const FoodCard = ({ id, image, title, price, preppr, tags }) => {
           <Tag label="Protein" />
           <Tag label="Protein" />
         </div>
-        <button className="w-full p-2 bg-green-500 mt-4 rounded-xl">
+        <button
+          className="w-full p-2 bg-green-500 mt-4 rounded-xl"
+          onClick={() => router.push(`/market/${id}`)}
+        >
           View
         </button>
       </div>

@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 
 import ProfileModal from "@/components/ProfileModal";
-import FoodCard from "@/components/FoodCard";
-import FilterBar from "@/components/FilterBar";
+import MealGrid from "@/components/MealsGrid";
+import MarketToolbar from "@/components/MarketToolBar";
 
 const demoData = [
   {
@@ -76,15 +76,10 @@ const demoData = [
 ];
 
 export default function MarketPage() {
-  const { user, loading, handleUpdateUser } = useContext(AuthContext);
-  const [filters, setFilters] = useState({
-    zip: "",
-    category: "",
-    radius: 10,
-  });
+  const { user, loading, update } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
+  const [mealModal, setMealModal] = useState(false);
 
-  // Conditional to render Profile Modal
   const needsProfile = useMemo(() => {
     if (!user) return false;
     return !user.name || !user.address || !user.zip;
@@ -103,54 +98,33 @@ export default function MarketPage() {
     }
   }, [loading, user, needsProfile]);
 
-  // Handle User modal update
+  // Submit Updated User
   const handleSubmit = async (form) => {
     try {
-      await handleUpdateUser(form);
-
+      await update(form);
       setOpen(false);
     } catch (e) {
       console.error("Profile update failed:", e?.response?.data || e);
     }
   };
 
-  // // Handle the filterbar inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleSearch = (values) => {
+    console.log("search:", values);
   };
 
-  const handleFilter = () => {
-    console.log(filters);
+  const handleAddMeal = (data) => {
+    console.log(data);
   };
 
   return (
-    <div className="pb-12">
-      {/* Top level filter Bar */}
-      <FilterBar
-        onClick={handleFilter}
-        handleChange={handleChange}
-        inputs={[
-          {
-            name: "zip",
-            placeholder: "Enter Zip",
-            value: filters.zip,
-            type: "number",
-          },
-        ]}
-      />
+    <div className="mx-auto max-w-8xl px-4">
+      {/* Filter bar and add Meal */}
+      <MarketToolbar onSearch={handleSearch} onSubmit={handleAddMeal} />
 
-      {/* Map thru all demo data and render FoodCards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-12 px-4">
-        {demoData.map((item) => (
-          <FoodCard {...item} key={item.id} />
-        ))}
-      </div>
+      {/* Cards */}
+      <MealGrid data={demoData} />
 
-      {/* Appears after login/signup to prompt user to finish setting up account/ sets localStorage on response */}
+      {/* Profile modal */}
       <ProfileModal
         open={open}
         onClose={() => setOpen(false)}
