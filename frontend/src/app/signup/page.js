@@ -9,7 +9,7 @@ import { HiOutlineMail } from "react-icons/hi";
 import { AuthContext } from "@/context/AuthContext";
 
 export default function Signup() {
-  const { signUp } = useContext(AuthContext);
+  const { register } = useContext(AuthContext);
   const [data, setData] = useState({
     email: "",
     password: "",
