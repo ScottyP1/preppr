@@ -1,14 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useRouter } from "next/navigation";
 
 import UserInputContainer from "@/components/UserInputContainer";
 
 import { HiOutlineMail } from "react-icons/hi";
 
-import { signUp } from "@/services/authRoutes";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function Signup() {
+  const { signUp } = useContext(AuthContext);
   const [data, setData] = useState({
     email: "",
     password: "",
