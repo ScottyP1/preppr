@@ -13,6 +13,7 @@ from user_app.views import (
     BuyerProfileViewSet,
     SellerProfileViewSet,
     UserRegistrationViewSet,  \
+    LogoutView,
 
 )
 from store_app.views import StallViewSet
@@ -31,6 +32,7 @@ urlpatterns = [
     # JWT
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/auth/logout/", LogoutView.as_view(), name="logout"),
 
     # API routes
     path("api/", include(router.urls)),
