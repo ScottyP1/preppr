@@ -32,7 +32,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ------- RESPONSE: on 401, refresh once and retry -------
+// ------- RESPONSE: on 401 -------
 let isRefreshing = false;
 let pendingQueue = [];
 
@@ -128,6 +128,15 @@ export async function apiGetUser() {
 
 export async function apiUpdateUser(payload) {
   const { data } = await api.put("me/user/", payload);
+  return data;
+}
+export async function apiGetSeller() {
+  const { data } = await api.get("me/seller_profile/");
+  return data;
+}
+
+export async function apiGetBuyer() {
+  const { data } = await api.get("me/buyer_profile/");
   return data;
 }
 

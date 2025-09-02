@@ -11,8 +11,10 @@ import {
   apiLogin,
   apiRegister,
   apiGetUser,
+  apiGetSeller,
   apiUpdateUser,
   apiBecome_seller,
+  apiGetBuyer,
   apiRefresh,
   setTokens,
   clearTokens,
@@ -59,20 +61,37 @@ export function AuthProvider({ children }) {
     setUser(user || (await apiGetUser()));
   }, []);
 
-  const handleLogin = useCallback(async (form) => {
-    try {
-      const { access, refresh, user } = await apiLogin(form);
+  const handleLogin = useCallback(
+    async (form) => {
+      try {
+        const { access: a, refresh: r } = await apiLogin(form);
 
-      setTokens(access, refresh);
-      setAccess(access);
-      setRefresh(refresh);
-      setUser(user || (await apiGetUser()));
+        setAccess(a);
+        setRefresh(r);
 
-      return true;
-    } catch (err) {
-      throw err;
-    }
-  }, []);
+        // 2) Get role
+        const baseUser = await apiGetUser(); // { id, email, role, ... }
+
+        // 3) Hit role-specific endpoint and set exactly what it returns
+        if (baseUser.role === "seller") {
+          const sellerPayload = await apiGetSeller(); // already includes `user`
+          setUser(sellerPayload);
+        } else if (baseUser.role === "buyer") {
+          const buyerPayload = await apiGetBuyer(); // already includes `user`
+          setUser(buyerPayload);
+        } else {
+          // fallback if some other role has no dedicated endpoint
+          setUser(baseUser);
+        }
+
+        return true;
+      } catch (err) {
+        console.error("Login failed:", err);
+        throw err;
+      }
+    },
+    [setAccess, setRefresh, setUser]
+  );
 
   const handleRegister = useCallback(async (form) => {
     await apiRegister(form);
