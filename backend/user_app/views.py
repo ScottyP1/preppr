@@ -140,6 +140,25 @@ class MeViewSet(viewsets.ViewSet):
             return Response(ser.data)
         return Response(SellerProfileSerializer(profile).data)
 
+    @action(detail=False, methods=["post"])
+    def become_seller(self, request):
+        """Upgrade the current user to seller and create SellerProfile.
+
+        - Requires: authenticated user with role=buyer
+        - Effect: switches user.role to seller, creates SellerProfile (if missing)
+        - Response: the created/updated seller profile
+        """
+        if request.user.role != User.Roles.BUYER:
+            return Response({"detail": "Only buyers can become sellers."}, status=403)
+
+        with transaction.atomic():
+            user = request.user
+            user.role = User.Roles.SELLER
+            user.save(update_fields=["role"])
+            profile, _ = SellerProfile.objects.get_or_create(user=user)
+
+        return Response(SellerProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
+
 
 class BuyerProfileViewSet(
     mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet

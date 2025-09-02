@@ -73,6 +73,13 @@ All require `Authorization: Bearer <access>`.
     { "address": "1 Main St", "zipcode": 94105, "stall": 3 }
     ```
 
+- POST `/api/me/become_seller/`
+  - Purpose: Upgrade an existing buyer account to a seller account.
+  - Role: only for users with `role = buyer`.
+  - Effect: sets `user.role = "seller"` and creates a blank `SellerProfile` if one does not exist.
+  - Response: `201` with the created seller profile payload.
+  - Notes: The `role` field on the user is read-only across APIs to prevent accidental switching; use this endpoint to change roles.
+
 ## Public Profiles (read-only)
 
 Require `Authorization: Bearer <access>`.
