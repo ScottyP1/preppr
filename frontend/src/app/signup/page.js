@@ -31,7 +31,7 @@ export default function Signup() {
     }
 
     try {
-      await signUp(data);
+      await register(data);
       router.push("/login");
     } catch (err) {
       setErrors(err);
