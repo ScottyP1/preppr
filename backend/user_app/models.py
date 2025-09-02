@@ -35,6 +35,7 @@ class BuyerProfile(models.Model):
         on_delete=models.SET_NULL,
         related_name="fans",
     )
+    avatar= models.CharField(max_length=255, blank=True, default='chef1')
 
 class SellerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller_profile")
@@ -50,3 +51,4 @@ class SellerProfile(models.Model):
         on_delete=models.SET_NULL,
         related_name="owner_profile",
     )
+    avatar= models.CharField(max_length=255, blank=True, default='chef1')
