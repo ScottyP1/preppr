@@ -6,6 +6,7 @@ This document summarizes the backend API for frontend integration: endpoints, pa
 - Auth: JWT (access/refresh)
 - Content type: send/receive JSON (`Content-Type: application/json`)
 - Auth header: `Authorization: Bearer <access_token>`
+ - Cart: endpoints under `/api/cart/` (see Cart section)
 
 ## Authentication
 
@@ -126,6 +127,51 @@ Custom action:
 Query params:
 - `?tags=gluten-free,vegan` — filter to stalls that match any of the tag names
 - `?allergens_exclude=fish,nuts` — exclude stalls that include any of the named allergens
+
+## Cart
+
+Cart connects buyers to stall inventory and enforces stock checks when adding/updating items and again during checkout. Only `buyer` role may use these endpoints. All require JWT.
+
+- GET `/api/cart/`
+  - Returns current open cart for the buyer.
+  - Response example:
+    ```json
+    {
+      "id": 5,
+      "status": "open",
+      "items": [
+        { "id": 12, "stall": { "id": 3, "product": "Apples", "price_cents": 299, "quantity": 17 }, "quantity": 2 }
+      ]
+    }
+    ```
+
+- POST `/api/cart/items/`
+  - Body: `{ "stall_id": 3, "quantity": 2 }`
+  - Behavior: Adds item or merges quantity if it already exists. Validates that the stall has stock (`quantity > 0`) and requested does not exceed available.
+
+- PATCH `/api/cart/items/{item_id}/`
+  - Body: `{ "quantity": 1 }`
+  - Behavior: Updates quantity; validated against current stock.
+
+- DELETE `/api/cart/items/{item_id}/`
+  - Removes the item from the cart.
+
+- POST `/api/cart/checkout/`
+  - Re-validates all items inside a DB transaction with row locks. If any item is out-of-stock or insufficient, returns `400` with details and no changes made.
+  - On success: decrements stall `quantity`, creates an `Order` snapshot and closes the cart. Returns the created order:
+    ```json
+    {
+      "id": 9,
+      "total_cents": 897,
+      "items": [ { "product_name": "Apples", "price_cents": 299, "quantity": 3 } ]
+    }
+    ```
+
+Common errors:
+- Adding out-of-stock item → `400 { "stall_id": ["This item is out of stock."] }`
+- Request over available → `400 { "quantity": ["Requested quantity exceeds available stock."] }`
+- Checkout insufficient → `400 { "detail": "Insufficient stock for some items.", "items": [{ "stall_id": 3, "reason": "Insufficient stock", "available": 1 }] }`
+
 
 ## Typical Flows
 

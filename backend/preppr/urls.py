@@ -17,6 +17,7 @@ from user_app.views import (
 
 )
 from store_app.views import StallViewSet
+from cart_app.views import CartViewSet
 
 # DRF router resources
 router = DefaultRouter()
@@ -25,6 +26,7 @@ router.register("buyers", BuyerProfileViewSet, basename="buyers")
 router.register("sellers", SellerProfileViewSet, basename="sellers")
 router.register("stalls", StallViewSet, basename="stalls")
 router.register("auth/register", UserRegistrationViewSet, basename="register")  # POST /api/auth/register/
+router.register("cart", CartViewSet, basename="cart")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
