@@ -56,6 +56,14 @@ All require `Authorization: Bearer <access>`.
 - GET `/api/me/user/`
   - Purpose: Fetch the authenticated user.
   - Response: `{ "id", "username", "email", "role", "first_name", "last_name" }`
+ - PUT/PATCH `/api/me/user/`
+   - Purpose: Update profile name fields.
+   - Writable fields: `first_name`, `last_name`.
+   - Example:
+     ```json
+     { "first_name": "Jane", "last_name": "Doe" }
+     ```
+   - Notes: `username`, `email`, and `role` are read-only via this endpoint.
 
 - GET/PUT/PATCH `/api/me/buyer_profile/`
   - Role: only for users with `role = buyer`.
@@ -72,6 +80,7 @@ All require `Authorization: Bearer <access>`.
     ```json
     { "address": "1 Main St", "zipcode": 94105, "stall": 3 }
     ```
+  - Note: Addresses live on the buyer/seller profile objects, not on the user account.
 
 - POST `/api/me/become_seller/`
   - Purpose: Upgrade an existing buyer account to a seller account.
