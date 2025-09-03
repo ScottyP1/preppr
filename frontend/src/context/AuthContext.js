@@ -112,6 +112,8 @@ export function AuthProvider({ children }) {
 
         setAccess(a);
         setRefresh(r);
+        // Used for protected routes
+        document.cookie = `access=${a}; path=/; SameSite=Lax`;
 
         // 2) Get role
         const baseUser = await apiGetUser(); // { id, email, role, ... }
@@ -130,7 +132,6 @@ export function AuthProvider({ children }) {
 
         return true;
       } catch (err) {
-        console.error("Login failed:", err);
         throw err;
       }
     },
