@@ -58,7 +58,7 @@ export default function Navbar() {
 
   const avatarFilename = getAvatarFilename();
   const avatarSrc =
-    avatarFilename && !imgError ? `/avatar/${avatarFilename}.png` : null;
+    avatarFilename && !imgError ? `/avatar/${avatarFilename}` : null;
 
   return (
     <header className="bg-black/[.4] relative">

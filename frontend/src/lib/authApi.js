@@ -105,15 +105,23 @@ api.interceptors.response.use(
 );
 
 // --------- API helpers ----------
-export async function apiLogin(credentials) {
-  const { data } = await api.post("auth/token/", credentials);
-  setTokens(data.access, data.refresh);
-  return data;
+export async function apiLogin(form) {
+  try {
+    const { data } = await api.post("auth/token/", form);
+    setTokens(data.access, data.refresh);
+    return data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
 }
 
 export async function apiRegister(form) {
-  const { data } = await api.post("auth/register/", form);
-  return data;
+  try {
+    const { data } = await api.post("auth/register/", form);
+    return data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
 }
 
 export async function apiRefresh(refresh = getRefresh()) {
@@ -141,11 +149,46 @@ export async function apiBecome_seller() {
   return data;
 }
 
-export async function postMeal(data) {
-  const response = await api.post("");
-}
-
 export async function apiUpdateAccount(payload) {
   const { data } = await api.patch("me/user/", payload);
+  return data;
+}
+
+export async function apiUpdateBuyer(payload) {
+  const { data } = await api.patch("me/buyer_profile/", payload);
+  return data;
+}
+
+export async function apiUpdateSeller(payload) {
+  const { data } = await api.patch("me/seller_profile/", payload);
+  return data;
+}
+
+export async function apiGetAllStalls() {
+  const { data } = await api.get("stalls/");
+  return data;
+}
+
+export async function apiCreateMeal({
+  description,
+  price,
+  tags = [],
+  image_url = [],
+  location,
+  product,
+}) {
+  const fd = new FormData();
+  fd.append("description", description);
+  fd.append("price", price);
+  fd.append("location", location);
+  fd.append("product", product);
+
+  tags.forEach((t) => fd.append("tags", t));
+
+  if (image_url) fd.append("image", image_url);
+
+  const { data } = await api.post("stalls/", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return data;
 }
