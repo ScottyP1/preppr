@@ -173,7 +173,7 @@ export async function apiCreateMeal({
   description,
   price,
   tags = [],
-  image_url = [],
+  image,
   location,
   product,
 }) {
@@ -185,7 +185,7 @@ export async function apiCreateMeal({
 
   tags.forEach((t) => fd.append("tags", t));
 
-  if (image_url) fd.append("image", image_url);
+  if (image) fd.append("image", image);
 
   const { data } = await api.post("stalls/", fd, {
     headers: { "Content-Type": "multipart/form-data" },

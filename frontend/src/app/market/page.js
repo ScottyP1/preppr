@@ -43,6 +43,7 @@ export default function MarketPage() {
     }
   }, [loading, user, needsProfile]);
 
+  // fetch Meals(Stalls)
   useEffect(() => {
     let active = true;
     (async () => {
@@ -82,7 +83,7 @@ export default function MarketPage() {
         description: form.description.trim(),
         price: Number(form.price),
         tags: form.tags,
-        image_url: form.image,
+        image: form.image,
         location: user.location || "N/A",
       });
       console.log("Meal created:", created);
@@ -94,7 +95,11 @@ export default function MarketPage() {
   return (
     <div className="mx-auto max-w-8xl px-4">
       {/* Filter bar and add Meal */}
-      <MarketToolbar onSearch={handleSearch} onSubmit={handleAddMeal} />
+      <MarketToolbar
+        onSearch={handleSearch}
+        onSubmit={handleAddMeal}
+        preppr={user}
+      />
 
       {/* Cards */}
       {!loadingStalls && <MealGrid data={demoData} />}

@@ -18,7 +18,7 @@ const FoodForm = ({ onClose, onSubmit }) => {
     description: "",
     price: "",
     tags: [],
-    image_url: null,
+    image: null,
     location: "",
     imagePreview: null,
   });
@@ -40,7 +40,7 @@ const FoodForm = ({ onClose, onSubmit }) => {
 
     setForm((prev) => ({
       ...prev,
-      image_url: file,
+      image: file,
       imagePreview: URL.createObjectURL(file),
     }));
   };
