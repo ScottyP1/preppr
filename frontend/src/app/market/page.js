@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useContext } from "react";
+import { useEffect, useMemo, useState, useContext, useRef } from "react";
 
 import { AuthContext } from "@/context/AuthContext";
 
@@ -17,84 +17,27 @@ const demoData = [
     preppr: false,
     tags: ["High Protein", "Fish"],
   },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Classic Cheeseburger",
-    price: "9.99",
-    preppr: true,
-    tags: ["Beef", "Comfort Food"],
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Vegan Buddha Bowl",
-    price: "11.50",
-    preppr: false,
-    tags: ["Vegan", "Healthy"],
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Chicken Alfredo Pasta",
-    price: "12.75",
-    preppr: true,
-    tags: ["Italian", "Chicken"],
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Avocado Toast",
-    price: "7.25",
-    preppr: false,
-    tags: ["Vegetarian", "Breakfast"],
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Pepperoni Pizza",
-    price: "13.50",
-    preppr: true,
-    tags: ["Pizza", "Cheese"],
-  },
-  {
-    id: 7,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Avocado Toast",
-    price: "7.25",
-    preppr: false,
-    tags: ["Vegetarian", "Breakfast"],
-  },
-  {
-    id: 8,
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    title: "Pepperoni Pizza",
-    price: "13.50",
-    preppr: true,
-    tags: ["Pizza", "Cheese"],
-  },
 ];
 
 export default function MarketPage() {
   const { user, loading, update } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
-  const [mealModal, setMealModal] = useState(false);
+  const shownRef = useRef(false);
+  const needsProfile =
+    !!user &&
+    (!user.user?.first_name?.trim() ||
+      !user.address?.trim() ||
+      !`${user.zipcode ?? ""}`.trim());
+
   console.log(user);
-  const needsProfile = useMemo(() => {
-    if (!user) return false;
-    return !user.name || !user.address || !user.zip;
-  }, [user]);
-
-  // Used to display user modal
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !user || !needsProfile || shownRef.current) return;
 
-    const key = `profilePrompt:${user.id}`;
-    const alreadyShown = localStorage.getItem(key);
-
-    if (needsProfile && !alreadyShown) {
+    const key = `profilePrompt:${user.user?.id ?? user.id}`;
+    if (!localStorage.getItem(key)) {
       setOpen(true);
       localStorage.setItem(key, "shown");
+      shownRef.current = true;
     }
   }, [loading, user, needsProfile]);
 

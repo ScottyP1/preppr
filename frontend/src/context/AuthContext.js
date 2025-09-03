@@ -12,7 +12,7 @@ import {
   apiRegister,
   apiGetUser,
   apiGetSeller,
-  apiUpdateUser,
+  apiUpdateAccount,
   apiBecome_seller,
   apiGetBuyer,
   apiRefresh,
@@ -45,21 +45,58 @@ export function AuthProvider({ children }) {
       setUser(null);
       return;
     }
+
+    if (user && user.user) return;
+
+    let cancelled = false;
     (async () => {
       try {
-        const user = await apiGetUser();
-        setUser(user);
+        const base = await apiGetUser();
+        if (cancelled) return;
+
+        const fresh =
+          base.role === "seller"
+            ? await apiGetSeller()
+            : base.role === "buyer"
+            ? await apiGetBuyer()
+            : base;
+
+        if (!cancelled) setUser(fresh);
       } catch {
-        setUser(null);
+        if (!cancelled) setUser(null);
       }
     })();
-  }, [access]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [access, user, setUser]);
 
   // Actions
-  const handleUpdateUser = useCallback(async (form) => {
-    const { user } = await apiUpdateUser(form);
-    setUser(user || (await apiGetUser()));
-  }, []);
+  const handleUpdateUser = useCallback(
+    async (form) => {
+      try {
+        await apiUpdateAccount(form);
+
+        const role =
+          user?.user?.role ?? user?.role ?? (await apiGetUser()).role;
+
+        const fresh =
+          role === "seller"
+            ? await apiGetSeller()
+            : role === "buyer"
+            ? await apiGetBuyer()
+            : await apiGetUser();
+
+        setUser(fresh);
+        return true;
+      } catch (err) {
+        console.error("Update failed:", err);
+        throw err;
+      }
+    },
+    [user, setUser]
+  );
 
   const handleLogin = useCallback(
     async (form) => {

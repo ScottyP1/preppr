@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
+import Button from "./Button";
 
 export default function ProfileModal({ open, onClose, onSubmit }) {
   if (!open) return null;
 
   const [form, setForm] = useState({
-    f_name: "",
-    l_name: "",
+    first_name: "",
+    last_name: "",
     address: "",
     zip: "",
   });
@@ -16,18 +17,18 @@ export default function ProfileModal({ open, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-white/[.4] rounded-lg p-6 w-full max-w-md space-y-4">
+      <div className="bg-white/[.8] rounded-lg p-6 w-full max-w-md space-y-4">
         <h2 className="text-xl font-semibold text-black">
           Complete your profile
         </h2>
         <CustomInput
-          name="f_name"
+          name="first_name"
           placeholder="First name"
           value={form.f_name}
           onChange={handleChange}
         />
         <CustomInput
-          name="l_name"
+          name="last_name"
           placeholder="Last name"
           value={form.l_name}
           onChange={handleChange}
@@ -51,12 +52,12 @@ export default function ProfileModal({ open, onClose, onSubmit }) {
           >
             Not now
           </button>
-          <button
+          <Button
             className="bg-[#82FF82] text-black px-3 py-2 rounded w-full"
             onClick={() => onSubmit(form)}
           >
             Save
-          </button>
+          </Button>
         </div>
       </div>
     </div>

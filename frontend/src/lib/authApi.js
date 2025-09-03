@@ -126,10 +126,6 @@ export async function apiGetUser() {
   return data;
 }
 
-export async function apiUpdateUser(payload) {
-  const { data } = await api.put("me/user/", payload);
-  return data;
-}
 export async function apiGetSeller() {
   const { data } = await api.get("me/seller_profile/");
   return data;
@@ -142,5 +138,14 @@ export async function apiGetBuyer() {
 
 export async function apiBecome_seller() {
   const { data } = await api.post("me/become_seller/");
+  return data;
+}
+
+export async function postMeal(data) {
+  const response = await api.post("");
+}
+
+export async function apiUpdateAccount(payload) {
+  const { data } = await api.patch("me/user/", payload);
   return data;
 }
