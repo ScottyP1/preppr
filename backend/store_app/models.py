@@ -21,6 +21,7 @@ class Stall(models.Model):
     description = models.TextField(blank=True, default="")
     image = models.ImageField(upload_to="stalls/main/", blank=True, null=True)
 
+
     # Location / availability
     location = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField(default=0)

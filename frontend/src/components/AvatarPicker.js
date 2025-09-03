@@ -1,10 +1,27 @@
-// components/AvatarPicker.jsx
-export default function AvatarPicker({ name, value, onChange, options = [] }) {
+import Button from "./Button";
+
+const AVATARS = [
+  "/avatar/chef1.png",
+  "/avatar/chef2.png",
+  "/avatar/chef3.png",
+  "/avatar/chef4.png",
+  "/avatar/chef5.png",
+  "/avatar/chef6.png",
+];
+
+export default function AvatarPicker({
+  name,
+  value,
+  onChange,
+  options = AVATARS,
+  onSubmit,
+}) {
   const choose = (url) => onChange({ target: { name, value: url } });
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-3 justify-items-center">
+    <div className="space-y-3 bg-gray-500/[.5] p-4 rounded-xl">
+      <h1 className="text-center text-2xl mb-12">Select an avatar</h1>
+      <div className="grid grid-cols-3 gap-12 justify-items-center">
         {options.map((url) => (
           <button
             key={url}
@@ -19,11 +36,14 @@ export default function AvatarPicker({ name, value, onChange, options = [] }) {
             <img
               src={url}
               alt="Avatar option"
-              className="w-12 h-12 object-cover"
+              className="w-20 h-20 object-cover"
             />
           </button>
         ))}
       </div>
+      <Button className="p-4 rounded-xl w-full mt-12" onClick={onSubmit}>
+        Submit
+      </Button>
     </div>
   );
 }
