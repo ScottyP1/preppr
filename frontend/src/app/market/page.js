@@ -79,7 +79,7 @@ export default function MarketPage() {
   const { user, loading, update } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [mealModal, setMealModal] = useState(false);
-
+  console.log(user);
   const needsProfile = useMemo(() => {
     if (!user) return false;
     return !user.name || !user.address || !user.zip;
@@ -113,6 +113,7 @@ export default function MarketPage() {
   };
 
   const handleAddMeal = (data) => {
+    if (user.role !== "seller") return;
     console.log(data);
   };
 
