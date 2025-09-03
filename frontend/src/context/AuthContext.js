@@ -13,10 +13,14 @@ import {
   apiGetUser,
   apiGetSeller,
   apiUpdateAccount,
+  apiUpdateBuyer,
+  apiUpdateSeller,
   apiBecome_seller,
   apiGetBuyer,
   apiRefresh,
   setTokens,
+  apiCreateMeal,
+  apiGetAllStalls,
   clearTokens,
   getAccess,
   getRefresh,
@@ -76,17 +80,20 @@ export function AuthProvider({ children }) {
   const handleUpdateUser = useCallback(
     async (form) => {
       try {
-        await apiUpdateAccount(form);
-
         const role =
           user?.user?.role ?? user?.role ?? (await apiGetUser()).role;
 
-        const fresh =
-          role === "seller"
-            ? await apiGetSeller()
-            : role === "buyer"
-            ? await apiGetBuyer()
-            : await apiGetUser();
+        let fresh;
+        if (role === "seller") {
+          await apiUpdateSeller(form);
+          fresh = await apiGetSeller();
+        } else if (role === "buyer") {
+          await apiUpdateBuyer(form);
+          fresh = await apiGetBuyer();
+        } else {
+          await apiUpdateAccount(form);
+          fresh = await apiGetUser();
+        }
 
         setUser(fresh);
         return true;
@@ -95,7 +102,7 @@ export function AuthProvider({ children }) {
         throw err;
       }
     },
-    [user, setUser]
+    [user]
   );
 
   const handleLogin = useCallback(
@@ -152,6 +159,8 @@ export function AuthProvider({ children }) {
       logout: handleLogout,
       update: handleUpdateUser,
       toSeller: apiBecome_seller,
+      create: apiCreateMeal,
+      allStalls: apiGetAllStalls,
     }),
     [user, access, refresh, loading, handleLogin, handleRegister, handleLogout]
   );

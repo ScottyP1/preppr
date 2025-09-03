@@ -19,7 +19,7 @@ class Stall(models.Model):
     # Basic listing info
     product = models.CharField(max_length=120)
     description = models.TextField(blank=True, default="")
-    image_url = models.URLField(blank=True, default="")
+    image_url = models.ImageField(upload_to="stalls/", blank=True, null=True)
 
     # Location / availability
     location = models.CharField(max_length=255)

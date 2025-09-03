@@ -20,16 +20,18 @@ const demoData = [
 ];
 
 export default function MarketPage() {
-  const { user, loading, update } = useContext(AuthContext);
+  const { user, loading, update, create, allStalls } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
+  const [stalls, setStalls] = useState(null);
+  const [loadingStalls, setLoadingStalls] = useState(true);
   const shownRef = useRef(false);
+
   const needsProfile =
     !!user &&
     (!user.user?.first_name?.trim() ||
       !user.address?.trim() ||
       !`${user.zipcode ?? ""}`.trim());
 
-  console.log(user);
   useEffect(() => {
     if (loading || !user || !needsProfile || shownRef.current) return;
 
@@ -40,6 +42,21 @@ export default function MarketPage() {
       shownRef.current = true;
     }
   }, [loading, user, needsProfile]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const data = await allStalls();
+        if (active) setStalls(data);
+      } finally {
+        if (active) setLoadingStalls(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Submit Updated User
   const handleSubmit = async (form) => {
@@ -55,18 +72,32 @@ export default function MarketPage() {
     console.log("search:", values);
   };
 
-  const handleAddMeal = (data) => {
-    if (user.role !== "seller") return;
-    console.log(data);
-  };
+  const handleAddMeal = async (form) => {
+    const role = user?.user?.role ?? user?.role;
+    if (role !== "seller") return;
 
+    try {
+      const created = await create({
+        product: form.product.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+        tags: form.tags,
+        image_url: form.image,
+        location: user.location || "N/A",
+      });
+      console.log("Meal created:", created);
+    } catch (e) {
+      console.error("Create meal failed:", e?.response?.data || e);
+    }
+  };
+  console.log(user);
   return (
     <div className="mx-auto max-w-8xl px-4">
       {/* Filter bar and add Meal */}
       <MarketToolbar onSearch={handleSearch} onSubmit={handleAddMeal} />
 
       {/* Cards */}
-      <MealGrid data={demoData} />
+      {!loadingStalls && <MealGrid data={demoData} />}
 
       {/* Profile modal */}
       <ProfileModal

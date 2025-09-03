@@ -52,7 +52,7 @@ const UserInputContainer = ({
         <span className="text-red-500 text-sm">{errors.detail}</span>
       )}
 
-      <Button className="w-full" onClick={onClick}>
+      <Button className="w-full rounded-xl" onClick={onClick}>
         {buttonLabel}
       </Button>
 

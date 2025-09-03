@@ -14,11 +14,12 @@ const TAG_OPTIONS = [
 
 const FoodForm = ({ onClose, onSubmit }) => {
   const [form, setForm] = useState({
-    title: "",
+    product: "",
     description: "",
     price: "",
     tags: [],
-    image: null,
+    image_url: null,
+    location: "",
     imagePreview: null,
   });
   const [showTagPicker, setShowTagPicker] = useState(false);
@@ -36,9 +37,10 @@ const FoodForm = ({ onClose, onSubmit }) => {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setForm((prev) => ({
       ...prev,
-      image: file,
+      image_url: file,
       imagePreview: URL.createObjectURL(file),
     }));
   };
@@ -89,8 +91,8 @@ const FoodForm = ({ onClose, onSubmit }) => {
         {/* Title */}
         <input
           type="text"
-          name="title"
-          value={form.title}
+          name="product"
+          value={form.product}
           onChange={handleChange}
           placeholder="Title"
           className="w-full mb-3 p-2 border rounded"
