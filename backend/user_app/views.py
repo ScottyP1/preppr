@@ -112,8 +112,13 @@ class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 class MeViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get", "put", "patch"])
     def user(self, request):
+        if request.method in ["PUT", "PATCH"]:
+            ser = UserSerializer(instance=request.user, data=request.data, partial=True)
+            ser.is_valid(raise_exception=True)
+            ser.save()
+            return Response(ser.data)
         return Response(UserSerializer(request.user).data)
 
     @action(detail=False, methods=["get", "put", "patch"])
