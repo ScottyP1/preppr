@@ -52,4 +52,4 @@ class SellerProfile(models.Model):
         related_name="owner_profile",
     )
     avatar= models.CharField(max_length=255, blank=True, default='chef1')
-    image_url = models.URLField(blank=True, default="")
+    image = models.ImageField(upload_to="profiles/sellers/", blank=True, null=True)
