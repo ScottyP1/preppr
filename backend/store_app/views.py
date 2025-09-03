@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,6 +16,7 @@ from .permissions import IsSellerOrReadOnly
 class StallViewSet(viewsets.ModelViewSet):
     queryset = Stall.objects.all().order_by("id")
     permission_classes = [IsSellerOrReadOnly]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:

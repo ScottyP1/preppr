@@ -51,5 +51,6 @@ class SellerProfile(models.Model):
         on_delete=models.SET_NULL,
         related_name="owner_profile",
     )
-    avatar= models.CharField(max_length=255, blank=True)
-    image_url = models.URLField(blank=True, default="")
+    avatar= models.CharField(max_length=255, blank=True, default='chef1')
+    image = models.ImageField(upload_to="profiles/sellers/", blank=True, null=True)
+

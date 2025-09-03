@@ -17,7 +17,7 @@ class AllergenSerializer(serializers.ModelSerializer):
 class StallImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = StallImage
-        fields = ["id", "href", "alt_text", "position", "is_primary"]
+        fields = ["id", "image", "alt_text", "position", "is_primary"]
 
 
 class StallSerializer(serializers.ModelSerializer):
@@ -34,7 +34,7 @@ class StallSerializer(serializers.ModelSerializer):
             # basics
             "product",
             "description",
-            "image_url",
+            "image",
             "images",
             "seller_image_url",
             # location/availability
@@ -72,23 +72,29 @@ class StallSerializer(serializers.ModelSerializer):
     def get_seller_image_url(self, obj):
         # If the seller has a profile image, surface it here for item cards
         owner = getattr(obj, "owner_profile", None)
-        if owner and getattr(owner, "image_url", ""):
-            return owner.image_url
+        # If owner has an uploaded image, return its URL
+        if owner and getattr(owner, "image", None):
+            try:
+                return owner.image.url
+            except Exception:
+                return ""
         return ""
 
 
 class StallWriteSerializer(serializers.ModelSerializer):
     tag_names = serializers.ListField(child=serializers.CharField(), required=False)
     allergen_names = serializers.ListField(child=serializers.CharField(), required=False)
-    image_urls = serializers.ListField(child=serializers.URLField(), required=False)
+    # Accept a primary image file and optional additional images
+    image = serializers.ImageField(required=False, allow_empty_file=False, write_only=True)
+    images = serializers.ListField(child=serializers.ImageField(), required=False, write_only=True)
 
     class Meta:
         model = Stall
         fields = [
             "product",
             "description",
-            "image_url",
-            "image_urls",
+            "image",
+            "images",
             "location",
             "quantity",
             "radius_m",
@@ -112,42 +118,54 @@ class StallWriteSerializer(serializers.ModelSerializer):
             alls = [Allergen.objects.get_or_create(name=name.strip())[0] for name in allergen_names if name.strip()]
             stall.allergens.set(alls)
 
-    def _sync_images(self, stall, image_urls):
-        if image_urls is None:
+    def _sync_images(self, stall, image_files):
+        if image_files is None:
             return
-        # replace current images with provided list
+        # Replace current additional images with provided list
         stall.images.all().delete()
-        for idx, href in enumerate(image_urls):
+        for idx, img in enumerate(image_files):
             StallImage.objects.create(
                 stall=stall,
-                href=href,
+                image=img,
                 alt_text=f"{stall.product}",
                 position=idx,
                 is_primary=(idx == 0),
             )
-        # keep legacy field in sync with first image if present
-        if image_urls:
-            stall.image_url = image_urls[0]
-            stall.save(update_fields=["image_url"])
 
     def create(self, validated_data):
         tag_names = validated_data.pop("tag_names", None)
         allergen_names = validated_data.pop("allergen_names", None)
-        image_urls = validated_data.pop("image_urls", None)
+        image_files = validated_data.pop("images", None)
+        primary_image = validated_data.pop("image", None)
+
         stall = Stall.objects.create(**validated_data)
+
+        # Assign primary image if provided
+        if primary_image is not None:
+            stall.image = primary_image
+            stall.save(update_fields=["image"])
+
         self._assign_labels(stall, tag_names, allergen_names)
-        self._sync_images(stall, image_urls)
+        self._sync_images(stall, image_files)
+        # If no explicit primary image but we have additional images, set the first as primary
+        if not stall.image and image_files:
+            stall.image = image_files[0]
+            stall.save(update_fields=["image"])
         return stall
 
     def update(self, instance, validated_data):
         tag_names = validated_data.pop("tag_names", None)
         allergen_names = validated_data.pop("allergen_names", None)
-        image_urls = validated_data.pop("image_urls", None)
+        image_files = validated_data.pop("images", None)
+        primary_image = validated_data.pop("image", None)
         for k, v in validated_data.items():
             setattr(instance, k, v)
         instance.save()
         self._assign_labels(instance, tag_names, allergen_names)
-        self._sync_images(instance, image_urls)
+        if primary_image is not None:
+            instance.image = primary_image
+            instance.save(update_fields=["image"])
+        self._sync_images(instance, image_files)
         return instance
 
 

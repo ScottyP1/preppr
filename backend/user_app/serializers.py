@@ -120,7 +120,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
             "zipcode",
             "stall",
             "avatar",
-            "image_url",
+            "image",
         ]
 
     def validate_zipcode(self, value):
