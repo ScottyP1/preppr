@@ -8,9 +8,9 @@ const FoodCard = ({ id, image, product, price_level, seller, tags }) => {
   return (
     <div className="w-full mx-auto max-w-lg">
       {/* Image wrapper with fixed height */}
-      <div className="relative w-full h-64 overflow-hidden rounded-t-xl">
+      <div className="relative w-full h-64 border-gray-300 border-2 overflow-hidden rounded-t-xl">
         <Image
-          src={image || "/default-food.jpg"}
+          src={image || "/default-food.png"}
           alt={product || "Food image"}
           fill
           className="object-cover"
