@@ -183,25 +183,29 @@ export async function apiGetAStall(id) {
 }
 
 export async function apiCreateMeal({
+  product,
   description,
   price,
-  tags = [],
-  image,
+  price_level,
   location,
-  product,
+  image,
+  tags = [],
+  allergens = [],
 }) {
   const fd = new FormData();
-  fd.append("description", description);
-  fd.append("price", price);
-  fd.append("location", location || "N/A");
   fd.append("product", product);
+  fd.append("description", description);
+  fd.append("location", location || "N/A");
 
-  tags.forEach((t) => fd.append("tags", t));
+  const cents = Math.round(parseFloat(price || "0") * 100);
+  fd.append("price_cents", String(cents));
 
+  if (price_level != null) fd.append("price_level", String(price_level));
   if (image) fd.append("image", image);
 
-  const { data } = await api.post("stalls/", fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  tags.forEach((t) => fd.append("tag_names", t));
+  allergens.forEach((a) => fd.append("allergen_names", a));
+
+  const { data } = await api.post("stalls/", fd);
   return data;
 }
