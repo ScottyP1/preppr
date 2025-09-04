@@ -160,9 +160,21 @@ class MeViewSet(viewsets.ViewSet):
             user = request.user
             user.role = User.Roles.SELLER
             user.save(update_fields=["role"])
-            profile, _ = SellerProfile.objects.get_or_create(user=user)
 
-        return Response(SellerProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
+            # Create or fetch seller profile
+            seller_profile, created = SellerProfile.objects.get_or_create(user=user)
+
+            # Copy overlapping fields from BuyerProfile → SellerProfile
+            buyer_profile = getattr(user, "buyer_profile", None)
+            if buyer_profile:
+                seller_profile.location = buyer_profile.location
+                seller_profile.address = buyer_profile.address
+                seller_profile.zipcode = buyer_profile.zipcode
+                seller_profile.save()
+
+
+        return Response(SellerProfileSerializer(seller_profile).data, status=status.HTTP_201_CREATED)
+
 
 
 class BuyerProfileViewSet(
