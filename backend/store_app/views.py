@@ -17,6 +17,9 @@ class StallViewSet(viewsets.ModelViewSet):
     queryset = Stall.objects.all().order_by("id")
     permission_classes = [IsSellerOrReadOnly]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    # Enable detail routes addressed by `id`, e.g. /api/stalls/123/
+    lookup_field = "id"
+    lookup_url_kwarg = "id"
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
