@@ -31,20 +31,23 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "rest_framework_simplejwt",  
+    "django.contrib.staticfiles", 
     # third party apps
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     # Local
     "user_app",
     "store_app",
+    "chat_app"
 ]
 # DEV: prints emails to console so you can test immediately
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -86,6 +89,8 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "preppr.asgi.application"
+
 WSGI_APPLICATION = "preppr.wsgi.application"
 
 
@@ -117,6 +122,12 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Internationalization

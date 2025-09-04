@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Chat from "../components/Chat";
 
 import Button from "@/components/Button";
 
@@ -82,6 +83,7 @@ export default function Home() {
           />
         </div>
       </section>
+      <Chat />
     </div>
   );
 }
