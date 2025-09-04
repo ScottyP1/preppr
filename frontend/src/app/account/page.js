@@ -8,7 +8,12 @@ import ProfileModal from "@/components/ProfileModal";
 import MyStoreItem from "@/components/MyStoreItem";
 
 export default function Account() {
-  const { user, loading, allStalls, deleteMeal: ctxDeleteMeal } = useContext(AuthContext);
+  const {
+    user,
+    loading,
+    allStalls,
+    deleteMeal: ctxDeleteMeal,
+  } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
 
   const tabs = ["My Store", "Orders", "Reviews", "Settings"];
@@ -17,8 +22,6 @@ export default function Account() {
   // My Store data
   const [myStalls, setMyStalls] = useState([]);
   const [loadingStalls, setLoadingStalls] = useState(false);
-
-  if (loading) return <h1 className="p-4">Loading…</h1>;
 
   useEffect(() => {
     let active = true;
@@ -31,7 +34,11 @@ export default function Account() {
 
         // helper to resolve seller id and user id robustly
         const getSellerId = (seller) =>
-          seller?.id ?? seller?.user?.id ?? seller?.pk ?? seller?.user_id ?? null;
+          seller?.id ??
+          seller?.user?.id ??
+          seller?.pk ??
+          seller?.user_id ??
+          null;
         const getUserId = () => user?.user?.id ?? user?.id ?? null;
 
         const uid = getUserId();
@@ -75,6 +82,7 @@ export default function Account() {
       // optionally show a UI toast here
     }
   };
+  if (loading) return <h1 className="p-4">Loading…</h1>;
 
   return (
     <div className="max-w-8xl mx-auto px-4 sm:px-6 mt-6">
@@ -133,14 +141,22 @@ export default function Account() {
       <div className="mt-3">
         {selectedTab === "My Store" && (
           <div className="bg-gray-300/80 border border-gray-300 w-full rounded-2xl p-4">
-            <h3 className="text-lg text-gray-700 font-medium mb-3">Active Listings</h3>
+            <h3 className="text-lg text-gray-700 font-medium mb-3">
+              Active Listings
+            </h3>
 
             {loadingStalls ? (
-              <div className="h-40 flex items-center justify-center">Loading…</div>
+              <div className="h-40 flex items-center justify-center">
+                Loading…
+              </div>
             ) : myStalls && myStalls.length ? (
               <div className="flex flex-col gap-3">
                 {myStalls.map((meal) => (
-                  <MyStoreItem key={meal.id} item={meal} onDelete={() => handleDelete(meal.id)} />
+                  <MyStoreItem
+                    key={meal.id}
+                    item={meal}
+                    onDelete={() => handleDelete(meal.id)}
+                  />
                 ))}
               </div>
             ) : (
