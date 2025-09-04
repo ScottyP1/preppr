@@ -64,7 +64,7 @@ class SpecialRequest(models.Model):
 
 class StallImage(models.Model):
     stall = models.ForeignKey("store_app.Stall", on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to="stalls/images/")
+    image = models.ImageField(upload_to="stalls/images/", blank=True, null=True)
     alt_text = models.CharField(max_length=200, blank=True, default="")
     position = models.PositiveIntegerField(default=0)
     is_primary = models.BooleanField(default=False)
