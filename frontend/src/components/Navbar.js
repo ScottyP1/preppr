@@ -49,17 +49,6 @@ export default function Navbar() {
     </Link>
   );
 
-  const getAvatarFilename = () => {
-    const candidate = user?.avatar || user?.user?.avatar || null;
-    if (!candidate) return null;
-    const parts = candidate.split("/").filter(Boolean);
-    return parts.length ? parts[parts.length - 1] : candidate;
-  };
-
-  const avatarFilename = getAvatarFilename();
-  const avatarSrc =
-    avatarFilename && !imgError ? `/avatar/${avatarFilename}` : null;
-
   return (
     <header className="bg-black/[.4] relative">
       <nav
@@ -115,7 +104,11 @@ export default function Navbar() {
               className="flex items-center gap-3"
             >
               <Image
-                src="/Preppr_smaller.png"
+                src={
+                  user?.user?.role === "seller"
+                    ? "/preppr.png"
+                    : "/Preppr_smaller.png"
+                }
                 alt="Preppr Logo"
                 width={210}
                 height={40}
@@ -156,9 +149,9 @@ export default function Navbar() {
                   className="ml-2 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white text-black text-sm font-medium focus:outline-none hover:ring-2 hover:ring-white transition"
                   title="Open account menu"
                 >
-                  {avatarSrc ? (
+                  {user?.user?.avatar ? (
                     <Image
-                      src={avatarSrc}
+                      src={user?.user?.avatar}
                       alt={`${user?.username || "User"} avatar`}
                       width={36}
                       height={36}

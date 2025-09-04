@@ -16,6 +16,13 @@ class Allergen(models.Model):
 
 
 class Stall(models.Model):
+    owner_profile = models.ForeignKey(
+        "user_app.SellerProfile",
+        on_delete=models.CASCADE,
+        related_name="stalls",
+        null=True,
+        blank=True,
+    )
     # Basic listing info
     product = models.CharField(max_length=120)
     description = models.TextField(blank=True, default="")

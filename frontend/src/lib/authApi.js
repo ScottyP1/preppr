@@ -145,8 +145,17 @@ export async function apiGetBuyer() {
 }
 
 export async function apiBecome_seller() {
-  const { data } = await api.post("me/become_seller/");
-  return data;
+  try {
+    const { data } = await api.post("me/become_seller/");
+    return data;
+  } catch (e) {
+    console.error(
+      "become_seller failed:",
+      e?.response?.status,
+      e?.response?.data || e
+    );
+    throw e?.response?.data || e;
+  }
 }
 
 export async function apiUpdateAccount(payload) {
@@ -180,7 +189,7 @@ export async function apiCreateMeal({
   const fd = new FormData();
   fd.append("description", description);
   fd.append("price", price);
-  fd.append("location", location);
+  fd.append("location", location || "N/A");
   fd.append("product", product);
 
   tags.forEach((t) => fd.append("tags", t));

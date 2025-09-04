@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+
 import {
   createContext,
   useContext,
@@ -76,23 +78,25 @@ export function AuthProvider({ children }) {
     };
   }, [access, user, setUser]);
 
-  // Actions
+  const refreshUser = useCallback(async () => {
+    const role = user?.user?.role;
+    const fresh =
+      role === "seller" ? await apiGetSeller() : await apiGetBuyer();
+    setUser(fresh);
+  }, [user]);
+
   const handleUpdateUser = useCallback(
     async (form) => {
       try {
-        const role =
-          user?.user?.role ?? user?.role ?? (await apiGetUser()).role;
-
+        const role = user?.user?.role;
         let fresh;
+
         if (role === "seller") {
           await apiUpdateSeller(form);
           fresh = await apiGetSeller();
         } else if (role === "buyer") {
           await apiUpdateBuyer(form);
           fresh = await apiGetBuyer();
-        } else {
-          await apiUpdateAccount(form);
-          fresh = await apiGetUser();
         }
 
         setUser(fresh);
@@ -103,6 +107,18 @@ export function AuthProvider({ children }) {
       }
     },
     [user]
+  );
+
+  const handleUpdateBaseUser = useCallback(
+    async (form) => {
+      try {
+        await apiUpdateAccount(form);
+        await refreshUser();
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    [refreshUser]
   );
 
   const handleLogin = useCallback(
@@ -149,6 +165,27 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const router = useRouter();
+
+  const handleBecomeSeller = async () => {
+    try {
+      const profile = await apiBecome_seller();
+
+      // Refresh user state
+      const [userData, sellerData] = await Promise.all([
+        apiGetUser(),
+        apiGetSeller(),
+      ]);
+      setUser({ user: userData, ...sellerData });
+
+      router.push("/market");
+
+      return true;
+    } catch (err) {
+      console.error("Failed to become seller:", err);
+      throw err;
+    }
+  };
   const value = useMemo(
     () => ({
       user,
@@ -159,8 +196,9 @@ export function AuthProvider({ children }) {
       register: handleRegister,
       logout: handleLogout,
       update: handleUpdateUser,
-      toSeller: apiBecome_seller,
-      create: apiCreateMeal,
+      updateBase: handleUpdateBaseUser,
+      toSeller: handleBecomeSeller,
+      createMeal: apiCreateMeal,
       allStalls: apiGetAllStalls,
     }),
     [user, access, refresh, loading, handleLogin, handleRegister, handleLogout]

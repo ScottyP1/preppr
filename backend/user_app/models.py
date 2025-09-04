@@ -9,7 +9,8 @@ class User(AbstractUser):
         SELLER = "seller", "Seller"
 
     role = models.CharField(max_length=10, choices=Roles.choices, default=Roles.BUYER)
-
+    avatar= models.CharField(max_length=255, blank=True, default='/avatar/chef6.png')
+    bio = models.CharField(max_length=255, blank=True, null=True)
     def is_buyer(self):
         return self.role == self.Roles.BUYER
 
@@ -35,7 +36,6 @@ class BuyerProfile(models.Model):
         on_delete=models.SET_NULL,
         related_name="fans",
     )
-    avatar= models.CharField(max_length=255, blank=True)
 
 class SellerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller_profile")
@@ -44,13 +44,5 @@ class SellerProfile(models.Model):
     zipcode = models.IntegerField(
         null=True, blank=True, default=None,
         validators=[MinValueValidator(0), MaxValueValidator(99999)])
-
-    stall = models.OneToOneField(
-        "store_app.Stall",                
-        null=True, blank=True,
-        on_delete=models.SET_NULL,
-        related_name="owner_profile",
-    )
-    avatar= models.CharField(max_length=255, blank=True, default='chef1')
     image = models.ImageField(upload_to="profiles/sellers/", blank=True, null=True)
 

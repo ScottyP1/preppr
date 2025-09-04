@@ -14,14 +14,12 @@ export default function AvatarPicker({
   value,
   onChange,
   options = AVATARS,
-  onSubmit,
 }) {
   const choose = (url) => onChange({ target: { name, value: url } });
 
   return (
-    <div className="space-y-3 bg-gray-500/[.5] p-4 rounded-xl">
-      <h1 className="text-center text-2xl mb-12">Select an avatar</h1>
-      <div className="grid grid-cols-3 gap-12 justify-items-center">
+    <div className="space-y-3 p-4 rounded-xl">
+      <div className="grid grid-cols-3 gap-x-12 justify-items-center">
         {options.map((url) => (
           <button
             key={url}
@@ -36,14 +34,11 @@ export default function AvatarPicker({
             <img
               src={url}
               alt="Avatar option"
-              className="w-20 h-20 object-cover"
+              className="w-12 h-12 object-cover"
             />
           </button>
         ))}
       </div>
-      <Button className="p-4 rounded-xl w-full mt-12" onClick={onSubmit}>
-        Submit
-      </Button>
     </div>
   );
 }
