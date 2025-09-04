@@ -6,7 +6,7 @@ import FilterBar from "@/components/FilterBar";
 import Button from "@/components/Button";
 import FoodForm from "./FoodForm";
 
-export default function MarketToolbar({ onSearch, onSubmit }) {
+export default function MarketToolbar({ onSearch, onSubmit, preppr }) {
   const [showFilters, setShowFilters] = useState(false);
   const [showAddMeal, setShowAddMeal] = useState(false);
   const [filters, setFilters] = useState({
@@ -78,13 +78,15 @@ export default function MarketToolbar({ onSearch, onSubmit }) {
 
       {/* Right: add button */}
       <div className="justify-self-end text-black">
-        <Button
-          className="flex items-center gap-2 px-4 py-2 rounded-xl"
-          onClick={() => setShowAddMeal((prev) => !prev)}
-        >
-          <IoIosAdd size={20} />
-          <span>Post Meal</span>
-        </Button>
+        {preppr && (
+          <Button
+            className="flex items-center gap-2 px-4 py-2 rounded-xl"
+            onClick={() => setShowAddMeal((prev) => !prev)}
+          >
+            <IoIosAdd size={20} />
+            <span>Post Meal</span>
+          </Button>
+        )}
       </div>
 
       {/* Meal Form */}
