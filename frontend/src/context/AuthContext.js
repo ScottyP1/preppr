@@ -27,6 +27,7 @@ import {
   getAccess,
   getRefresh,
   apiGetAStall,
+  apiDeleteMeal,
 } from "@/lib/authApi";
 
 export const AuthContext = createContext(null);
@@ -202,6 +203,7 @@ export function AuthProvider({ children }) {
       createMeal: apiCreateMeal,
       allStalls: apiGetAllStalls,
       aStall: apiGetAStall,
+      deleteMeal: apiDeleteMeal,
     }),
     [user, access, refresh, loading, handleLogin, handleRegister, handleLogout]
   );

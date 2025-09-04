@@ -209,3 +209,8 @@ export async function apiCreateMeal({
   const { data } = await api.post("stalls/", fd);
   return data;
 }
+
+export async function apiDeleteMeal(id) {
+  const { data } = await api.delete(`/stalls/${id}/`);
+  return data;
+}
