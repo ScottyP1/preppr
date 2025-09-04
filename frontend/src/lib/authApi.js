@@ -177,6 +177,10 @@ export async function apiGetAllStalls() {
   const { data } = await api.get("stalls/");
   return data;
 }
+export async function apiGetAStall(id) {
+  const { data } = await api.get(`stalls/${id}`);
+  return data;
+}
 
 export async function apiCreateMeal({
   description,
