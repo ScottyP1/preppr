@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from .models import Stall, SpecialRequest, Tag, Allergen
@@ -42,6 +43,19 @@ class StallViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def perform_destroy(self, instance):
+        """Only allow deletion by the owning seller profile."""
+        user = getattr(self.request, "user", None)
+        # Role check handled by IsSellerOrReadOnly; enforce ownership here
+        seller_profile = getattr(user, "seller_profile", None)
+        if not seller_profile or instance.owner_profile_id != getattr(
+            seller_profile, "id", None
+        ):
+            raise PermissionDenied("You can only delete your own stalls.")
+        instance.delete()
+
+    
+
     @action(detail=True, methods=["post"])
     def set_quantity(self, request, pk=None):
         stall = self.get_object()
@@ -71,9 +85,15 @@ class StallViewSet(viewsets.ModelViewSet):
         if getattr(user, "role", None) != "buyer":
             return Response({"detail": "Only buyers can create requests."}, status=403)
         if not stall.special_requests_allowed:
-            return Response({"detail": "Special requests disabled for this stall."}, status=400)
+            return Response(
+                {"detail": "Special requests disabled for this stall."}, status=400
+            )
         note = request.data.get("note")
         if not note:
             return Response({"detail": "note is required"}, status=400)
-        sr = SpecialRequest.objects.create(stall=stall, buyer_profile=user.buyer_profile, note=note)
-        return Response(SpecialRequestSerializer(sr).data, status=status.HTTP_201_CREATED)
+        sr = SpecialRequest.objects.create(
+            stall=stall, buyer_profile=user.buyer_profile, note=note
+        )
+        return Response(
+            SpecialRequestSerializer(sr).data, status=status.HTTP_201_CREATED
+        )
