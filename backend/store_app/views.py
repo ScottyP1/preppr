@@ -50,6 +50,25 @@ class StallViewSet(viewsets.ModelViewSet):
             names = [a.strip() for a in ex.split(",") if a.strip()]
             qs = qs.exclude(allergens__name__in=names).distinct()
 
+        # Single category alias: ?category=vegan (maps to tags__name)
+        category = self.request.query_params.get("category")
+        if category:
+            qs = qs.filter(tags__name__iexact=category.strip()).distinct()
+
+        # Filter by seller zipcode: ?zip=94107
+        zip_param = self.request.query_params.get("zip")
+        if zip_param:
+            try:
+                z = int(zip_param)
+                qs = qs.filter(owner_profile__zipcode=z)
+            except (TypeError, ValueError):
+                # ignore invalid zip
+                pass
+
+        # TODO: radius filtering requires coordinates (lat/lng). If you add
+        # coords to SellerProfile/Stall, compute distance with Haversine and filter.
+        # For now, `radius` parameter is accepted but ignored.
+
         return qs
 
     # Utilities

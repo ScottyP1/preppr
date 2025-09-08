@@ -1,4 +1,3 @@
-// app/account/page.jsx
 "use client";
 
 import { useState, useContext, useEffect } from "react";
@@ -6,6 +5,9 @@ import Image from "next/image";
 import { AuthContext } from "@/context/AuthContext";
 import ProfileModal from "@/components/ProfileModal";
 import MyStoreItem from "@/components/MyStoreItem";
+import ReviewStats from "@/components/ReviewStats"; // if already present
+import AvailabilityCalendar from "@/components/AvailabilityCalendar";
+import ToSeller from "@/components/ToSeller"; // your existing component
 
 export default function Account() {
   const {
@@ -15,6 +17,7 @@ export default function Account() {
     deleteMeal: ctxDeleteMeal,
   } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
 
   const tabs = ["My Store", "Orders", "Reviews", "Settings"];
   const [selectedTab, setSelectedTab] = useState("My Store");
@@ -147,7 +150,7 @@ export default function Account() {
 
             {loadingStalls ? (
               <div className="h-40 flex items-center justify-center">
-                Loading…
+                Loading… 
               </div>
             ) : myStalls && myStalls.length ? (
               <div className="flex flex-col gap-3">
@@ -168,20 +171,91 @@ export default function Account() {
         )}
 
         {selectedTab === "Orders" && (
+
           <OrdersPanel />
+
         )}
 
         {selectedTab === "Reviews" && (
-          <div className="bg-gray-100 border border-gray-200 w-full rounded-2xl p-4 h-64 flex items-center justify-center text-gray-500">
-            Your Reviews Go Here
+          <div className="bg-gray-300/80 border border-gray-200 w-full rounded-2xl p-4">
+            <ReviewStats />
           </div>
         )}
 
+        {/* ---- UPDATED Settings TAB ---- */}
         {selectedTab === "Settings" && (
-          <div className="bg-gray-100 border border-gray-200 w-full rounded-2xl p-4 h-64 flex items-center justify-center text-gray-500">
-            Your Settings Go Here
+          <div className="bg-gray-300/80 border border-gray-200 w-full rounded-2xl p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left: calendar */}
+              <AvailabilityCalendar />
+
+              {/* Right: Account Settings */}
+              <div className="bg-white/30 p-4 rounded-2xl border border-gray-200 flex flex-col ">
+                <h3 className="text-lg font-semibold mb-4 text-gray-600">Account Settings</h3>
+
+                {/* Use your existing ToSeller button for buyers */}
+                <div>
+                  <ToSeller />
+                </div>
+
+                {/* If user is a seller, show Deactivate Seller Account flow */}
+                {user?.user?.role === "seller" && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowDeactivateModal(true)}
+                      className="bg-red-600 text-white px-4 py-2 rounded-xl"
+                    >
+                      Deactivate Seller Account
+                    </button>
+                  </div>
+                )}
+
+                {/* Modal / dialog */}
+                {showDeactivateModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                      className="absolute inset-0 bg-black/40"
+                      onClick={() => setShowDeactivateModal(false)}
+                    />
+                    <div className="relative bg-white rounded-2xl p-6 max-w-md w-full z-60 border border-gray-200">
+                      <h4 className="text-lg font-semibold mb-3 text-gray-800">
+                        Are you sure?
+                      </h4>
+                      <p className="text-sm text-gray-700 mb-6">
+                        Are you sure you want to deactivate your Preppr Account? This can not be undone.
+                      </p>
+
+                      <div className="flex gap-3 justify-end">
+                        <button
+                          onClick={() => setShowDeactivateModal(false)}
+                          className="px-4 py-2 rounded-xl bg-red-600 text-white"
+                        >
+                          Delete Preppr Account
+                        </button>
+                        <button
+                          onClick={() => setShowDeactivateModal(false)}
+                          className="px-4 py-2 rounded-xl bg-gray-200 text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
+        {/* ------------------------------ */}
+
+        {selectedTab === "Settings" && null}
+
+        {selectedTab === "Settings" && null}
+
+        {selectedTab === "Settings" && null}
+
+        {/* (Other tabs remain unchanged) */}
       </div>
 
       {open && (

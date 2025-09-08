@@ -173,8 +173,8 @@ export async function apiUpdateSeller(payload) {
   return data;
 }
 
-export async function apiGetAllStalls() {
-  const { data } = await api.get("stalls/");
+export async function apiGetAllStalls(params) {
+  const { data } = await api.get("stalls/", { params });
   return data;
 }
 export async function apiGetAStall(id) {
@@ -185,16 +185,12 @@ export async function apiGetAStall(id) {
 // Filter stalls using backend proximity + tags endpoint
 // params: { zip, category, radius } where radius is in miles
 export async function apiFilterStalls({ zip, category, radius }) {
-  // Convert miles to meters (rounded)
-  const miles = parseFloat(radius || 0);
-  const radius_m = Math.max(0, Math.round(miles * 1609.34));
-
-  const params = new URLSearchParams();
-  if (zip) params.set("zipcode", String(zip));
-  if (radius_m) params.set("radius_m", String(radius_m));
-  if (category) params.set("preferences", String(category));
-
-  const { data } = await api.get(`stalls/filter/?${params.toString()}`);
+  // Backend supports tags via `category` and zip via `zip`. `radius` is currently a hint.
+  const params = {};
+  if (zip) params.zip = zip;
+  if (category) params.category = category;
+  if (radius) params.radius = radius; // Not enforced server-side yet
+  const { data } = await api.get("stalls/", { params });
   return data;
 }
 
