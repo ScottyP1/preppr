@@ -5,7 +5,7 @@ const MarketItemHeader = ({ stall, cardHeight = 360 }) => (
     {/* product image */}
     <div
       className="relative w-full overflow-hidden rounded-xl md:w-1/2 md:h-[360px]"
-      style={{ aspectRatio: "4 / 3" }} // ensures height on mobile
+      style={{ aspectRatio: "4 / 3" }}
     >
       {stall?.image ? (
         <Image
