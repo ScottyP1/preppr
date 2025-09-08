@@ -193,6 +193,10 @@ export default function Account() {
             first_name: user?.user?.first_name || "",
             last_name: user?.user?.last_name || "",
             bio: user?.user?.bio || "",
+            // profile fields (role-specific)
+            location: user?.location || "",
+            address: user?.address || "",
+            zipcode: user?.zipcode ?? "",
           }}
           onClose={() => setOpen(false)}
         />

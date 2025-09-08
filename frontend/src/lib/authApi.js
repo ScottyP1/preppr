@@ -191,6 +191,12 @@ export async function apiCreateMeal({
   image,
   tags = [],
   allergens = [],
+  calories,
+  fat_g,
+  carbs_g,
+  protein_g,
+  includes,
+  options,
 }) {
   const fd = new FormData();
   fd.append("product", product);
@@ -205,6 +211,14 @@ export async function apiCreateMeal({
 
   tags.forEach((t) => fd.append("tag_names", t));
   allergens.forEach((a) => fd.append("allergen_names", a));
+
+  if (calories != null) fd.append("calories", String(Math.max(0, parseInt(calories || 0))));
+  if (fat_g != null) fd.append("fat_g", String(Math.max(0, parseFloat(fat_g || 0))));
+  if (carbs_g != null) fd.append("carbs_g", String(Math.max(0, parseFloat(carbs_g || 0))));
+  if (protein_g != null) fd.append("protein_g", String(Math.max(0, parseFloat(protein_g || 0))));
+
+  if (Array.isArray(includes)) fd.append("includes", JSON.stringify(includes));
+  if (Array.isArray(options)) fd.append("options", JSON.stringify(options));
 
   const { data } = await api.post("stalls/", fd);
   return data;

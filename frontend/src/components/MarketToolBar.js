@@ -1,14 +1,15 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { IoIosAdd } from "react-icons/io";
 
 import FilterBar from "@/components/FilterBar";
 import Button from "@/components/Button";
-import FoodForm from "./FoodForm";
+// import FoodForm from "./FoodForm"; // replaced by dedicated create page
 
 export default function MarketToolbar({ onSearch, onSubmit, preppr }) {
+  const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
-  const [showAddMeal, setShowAddMeal] = useState(false);
   const [filters, setFilters] = useState({
     zip: "",
     category: "",
@@ -81,7 +82,7 @@ export default function MarketToolbar({ onSearch, onSubmit, preppr }) {
         {preppr && (
           <Button
             className="flex items-center gap-2 px-4 py-2 rounded-xl"
-            onClick={() => setShowAddMeal((prev) => !prev)}
+            onClick={() => router.push("/market/new")}
           >
             <IoIosAdd size={20} />
             <span>Post Meal</span>
@@ -89,10 +90,7 @@ export default function MarketToolbar({ onSearch, onSubmit, preppr }) {
         )}
       </div>
 
-      {/* Meal Form */}
-      {showAddMeal && (
-        <FoodForm onClose={() => setShowAddMeal(false)} onSubmit={onSubmit} />
-      )}
+      {/* Inline modal form no longer used; create page handles posting */}
     </div>
   );
 }

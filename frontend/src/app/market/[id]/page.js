@@ -37,26 +37,17 @@ export default function MarketItemPage() {
         {/* Top section food img and description */}
         <MarketItemHeader stall={stall} />
 
-        {/* Contains flags */}
-        <ContainsFlags />
+        {/* Contains flags from backend allergens */}
+        <ContainsFlags items={(stall?.allergens || []).map((a) => a?.name).filter(Boolean)} />
 
-        {/* Details: Includes / Options */}
+        {/* Details: Includes / Options from backend */}
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DetailList
-            title="Includes"
-            lines={[
-              "×7 salmon entries (1 serving each)",
-              "×7 asparagus (1 serving each)",
-            ]}
-          />
-          <DetailList
-            title="Options"
-            lines={["Single meal", "7-Day meal prep"]}
-          />
+          <DetailList title="Includes" lines={stall?.includes || []} />
+          <DetailList title="Options" lines={stall?.options || []} />
         </div>
 
         {/* Nutrition */}
-        <NutritionChart title="Nutrition (per serving)" />
+        <NutritionChart title="Nutrition (per serving)" data={stall?.nutrition || stall} />
       </SectionCard>
 
       {/* Special request */}
