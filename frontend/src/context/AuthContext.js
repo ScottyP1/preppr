@@ -29,6 +29,14 @@ import {
   apiGetAStall,
   apiDeleteMeal,
   apiFilterStalls,
+  apiGetCart,
+  apiAddToCart,
+  apiUpdateCartItem,
+  apiRemoveCartItem,
+  apiCheckoutCart,
+  apiGetBuyerOrders,
+  apiGetSellerOrders,
+  apiSetOrderItemStatus,
 } from "@/lib/authApi";
 
 export const AuthContext = createContext(null);
@@ -38,6 +46,7 @@ export function AuthProvider({ children }) {
   const [access, setAccess] = useState(null);
   const [refresh, setRefresh] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState(null);
 
   // Hydrate from storage
   useEffect(() => {
@@ -166,9 +175,59 @@ export function AuthProvider({ children }) {
     setAccess(null);
     setRefresh(null);
     setUser(null);
+    setCart(null);
   }, []);
 
   const router = useRouter();
+
+  // Cart helpers
+  const refreshCart = useCallback(async () => {
+    try {
+      const data = await apiGetCart();
+      setCart(data);
+      return data;
+    } catch (e) {
+      // ignore if not buyer or not logged in
+      return null;
+    }
+  }, []);
+
+  const addToCart = useCallback(async ({ stall_id, quantity = 1 }) => {
+    const data = await apiAddToCart({ stall_id, quantity });
+    setCart(data);
+    return data;
+  }, []);
+
+  const updateCartItem = useCallback(async ({ item_id, quantity }) => {
+    const data = await apiUpdateCartItem({ item_id, quantity });
+    setCart(data);
+    return data;
+  }, []);
+
+  const removeCartItem = useCallback(async ({ item_id }) => {
+    const data = await apiRemoveCartItem({ item_id });
+    setCart(data);
+    return data;
+  }, []);
+
+  const checkoutCart = useCallback(async () => {
+    const order = await apiCheckoutCart();
+    setCart(null); // new cart will be created on next refresh
+    return order;
+  }, []);
+
+  // Orders helpers
+  const getBuyerOrders = useCallback(async () => {
+    return apiGetBuyerOrders();
+  }, []);
+
+  const getSellerOrders = useCallback(async () => {
+    return apiGetSellerOrders();
+  }, []);
+
+  const setOrderItemStatus = useCallback(async ({ order_item_id, status }) => {
+    return apiSetOrderItemStatus({ order_item_id, status });
+  }, []);
 
   const handleBecomeSeller = async () => {
     try {
@@ -195,6 +254,7 @@ export function AuthProvider({ children }) {
       access,
       refresh,
       loading,
+      cart,
       login: handleLogin,
       register: handleRegister,
       logout: handleLogout,
@@ -206,8 +266,16 @@ export function AuthProvider({ children }) {
       aStall: apiGetAStall,
       deleteMeal: apiDeleteMeal,
       filterStalls: apiFilterStalls,
+      refreshCart,
+      addToCart,
+      updateCartItem,
+      removeCartItem,
+      checkoutCart,
+      getBuyerOrders,
+      getSellerOrders,
+      setOrderItemStatus,
     }),
-    [user, access, refresh, loading, handleLogin, handleRegister, handleLogout]
+    [user, access, refresh, loading, cart, handleLogin, handleRegister, handleLogout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -3,6 +3,7 @@
 import { useState, useContext, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { FiShoppingCart } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "@/context/AuthContext";
 import UserMenu from "./UserMenu";
@@ -10,7 +11,7 @@ import UserMenu from "./UserMenu";
 export default function Navbar() {
   const [open, setOpen] = useState(false); // mobile hamburger
   const [menuOpen, setMenuOpen] = useState(false); // user menu dropdown
-  const { user, logout } = useContext(AuthContext) || {};
+  const { user, logout, cart, refreshCart } = useContext(AuthContext) || {};
   const router = useRouter();
   const [imgError, setImgError] = useState(false); // track if avatar failed to load
 
@@ -25,6 +26,12 @@ export default function Navbar() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      refreshCart?.().catch(() => {});
+    }
+  }, [user]);
 
   const handleMobileLogout = () => {
     logout?.();
@@ -127,8 +134,20 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right section: login/avatars */}
+          {/* Right section: cart + login/avatars */}
           <div className="flex items-center gap-2">
+            {user && user?.user?.role === "buyer" && (
+              <Link href="/cart" className="relative mr-1 hidden md:inline-flex" title="Cart">
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white text-black hover:ring-2 hover:ring-white transition">
+                  <FiShoppingCart size={18} />
+                </span>
+                {cart?.items?.length > 0 && (
+                  <span className="absolute -top-1 -right-1 rounded-full bg-rose-600 text-white text-xs px-2 py-0.5">
+                    {cart.items.length}
+                  </span>
+                )}
+              </Link>
+            )}
             {!user && (
               <div className="hidden md:block">
                 <Link
