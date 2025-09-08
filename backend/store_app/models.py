@@ -44,6 +44,7 @@ class Stall(models.Model):
     calories = models.PositiveIntegerField(default=0)
     fat_g = models.FloatField(default=0)
     carbs_g = models.FloatField(default=0)
+    protein_g = models.FloatField(default=0)
 
     # Labels and warnings
     tags = models.ManyToManyField(Tag, blank=True, related_name="stalls")

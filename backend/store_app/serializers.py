@@ -54,6 +54,7 @@ class StallSerializer(serializers.ModelSerializer):
             "calories",
             "fat_g",
             "carbs_g",
+            "protein_g",
             "tags",
             "allergens",
             "options",
@@ -105,6 +106,7 @@ class StallWriteSerializer(serializers.ModelSerializer):
             "calories",
             "fat_g",
             "carbs_g",
+            "protein_g",
             "options",
             "includes",
             "special_requests_allowed",
@@ -143,6 +145,21 @@ class StallWriteSerializer(serializers.ModelSerializer):
         seller_profile = None
         if request and request.user.is_authenticated:
             seller_profile = getattr(request.user, "seller_profile", None)
+
+        # Enforce seller location; use it for the stall's location
+        from rest_framework import serializers as drf_serializers
+        if not seller_profile or not (seller_profile.location and seller_profile.location.strip()):
+            raise drf_serializers.ValidationError(
+                {"location": "Seller profile must have a location set before creating a meal. Update your account settings."}
+            )
+
+        # Always set location from seller's profile to ensure consistency
+        validated_data["location"] = seller_profile.location
+
+        # Require at least one image
+        from rest_framework import serializers as drf_serializers
+        if primary_image is None and not image_files:
+            raise drf_serializers.ValidationError({"image": "An image is required to create a meal."})
 
         # Attach seller_profile (owner) to the stall
         stall = Stall.objects.create(owner_profile=seller_profile, **validated_data)
