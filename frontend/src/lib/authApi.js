@@ -182,6 +182,22 @@ export async function apiGetAStall(id) {
   return data;
 }
 
+// Filter stalls using backend proximity + tags endpoint
+// params: { zip, category, radius } where radius is in miles
+export async function apiFilterStalls({ zip, category, radius }) {
+  // Convert miles to meters (rounded)
+  const miles = parseFloat(radius || 0);
+  const radius_m = Math.max(0, Math.round(miles * 1609.34));
+
+  const params = new URLSearchParams();
+  if (zip) params.set("zipcode", String(zip));
+  if (radius_m) params.set("radius_m", String(radius_m));
+  if (category) params.set("preferences", String(category));
+
+  const { data } = await api.get(`stalls/filter/?${params.toString()}`);
+  return data;
+}
+
 export async function apiCreateMeal({
   product,
   description,
