@@ -28,7 +28,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         # Use email as username → ensure uniqueness across both fields
-        if User.objects.filter(email=value).exists() or User.objects.filter(username=value).exists():
+        if (
+            User.objects.filter(email=value).exists()
+            or User.objects.filter(username=value).exists()
+        ):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
@@ -41,7 +44,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password_confirm"]:
-            raise serializers.ValidationError({"password_confirm": "Passwords don't match."})
+            raise serializers.ValidationError(
+                {"password_confirm": "Passwords don't match."}
+            )
         return attrs
 
     def create(self, validated_data):
@@ -61,11 +66,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "role", "first_name", "last_name", "avatar", "bio"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "role",
+            "first_name",
+            "last_name",
+            "avatar",
+            "bio",
+        ]
         read_only_fields = ["id", "username", "email", "role"]
 
 
@@ -87,7 +100,17 @@ class BuyerProfileSerializer(serializers.ModelSerializer):
             "address",
             "zipcode",
             "favorite_stall",
+            "carts",
         ]
+
+    def get_carts(self, obj):
+        from cart_app.serializers import CartSerializer
+        from cart_app.models import Cart
+
+        active_cart = obj.carts.filter(status=Cart.OPEN).first()
+        if active_cart:
+            return CartSerializer(active_cart, context=self.context).data
+        return None
 
     def validate_zipcode(self, value):
         # Allow empty / null to pass through (handled by model defaults)
@@ -99,7 +122,9 @@ class BuyerProfileSerializer(serializers.ModelSerializer):
         except (TypeError, ValueError):
             raise serializers.ValidationError("Zipcode must be numeric.")
         if iv < 0 or iv > 99999:
-            raise serializers.ValidationError("Zipcode must be at most 5 digits (0–99999).")
+            raise serializers.ValidationError(
+                "Zipcode must be at most 5 digits (0–99999)."
+            )
         return iv
 
 
@@ -129,5 +154,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
         except (TypeError, ValueError):
             raise serializers.ValidationError("Zipcode must be numeric.")
         if iv < 0 or iv > 99999:
-            raise serializers.ValidationError("Zipcode must be at most 5 digits (0–99999).")
+            raise serializers.ValidationError(
+                "Zipcode must be at most 5 digits (0–99999)."
+            )
         return iv
