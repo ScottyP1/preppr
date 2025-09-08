@@ -28,6 +28,7 @@ import {
   getRefresh,
   apiGetAStall,
   apiDeleteMeal,
+  apiFilterStalls,
 } from "@/lib/authApi";
 
 export const AuthContext = createContext(null);
@@ -204,6 +205,7 @@ export function AuthProvider({ children }) {
       allStalls: apiGetAllStalls,
       aStall: apiGetAStall,
       deleteMeal: apiDeleteMeal,
+      filterStalls: apiFilterStalls,
     }),
     [user, access, refresh, loading, handleLogin, handleRegister, handleLogout]
   );

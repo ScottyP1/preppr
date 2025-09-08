@@ -8,7 +8,7 @@ import MealGrid from "@/components/MealsGrid";
 import MarketToolbar from "@/components/MarketToolBar";
 
 export default function MarketPage() {
-  const { user, loading, createMeal, allStalls } = useContext(AuthContext);
+  const { user, loading, createMeal, allStalls, filterStalls } = useContext(AuthContext);
   const [stalls, setStalls] = useState(null);
   const [loadingStalls, setLoadingStalls] = useState(true);
 
@@ -29,8 +29,25 @@ export default function MarketPage() {
   }, []);
 
   // Filter Bar
-  const handleSearch = (values) => {
-    console.log("search:", values);
+  const handleSearch = async (values) => {
+    setLoadingStalls(true);
+    try {
+      if (!values?.zip) {
+        const data = await allStalls();
+        setStalls(data);
+        return;
+      }
+      const data = await filterStalls({
+        zip: values.zip,
+        category: values.category,
+        radius: values.radius,
+      });
+      setStalls(data);
+    } catch (e) {
+      console.error("Filter failed:", e?.response?.data || e);
+    } finally {
+      setLoadingStalls(false);
+    }
   };
 
   // Adding meal
