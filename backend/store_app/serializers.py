@@ -16,9 +16,20 @@ class AllergenSerializer(serializers.ModelSerializer):
 
 
 class StallImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = StallImage
         fields = ["id", "image", "alt_text", "position", "is_primary"]
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
 
 
 class SellerMiniSerializer(serializers.ModelSerializer):
@@ -34,6 +45,7 @@ class StallSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     images = StallImageSerializer(many=True, read_only=True)
     seller = serializers.SerializerMethodField()  # 👈 nested seller info
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Stall
@@ -83,6 +95,15 @@ class StallSerializer(serializers.ModelSerializer):
                 "profile_image": owner.image.url if owner.image else None,
             }
         return None
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
 
 
 class StallWriteSerializer(serializers.ModelSerializer):

@@ -14,28 +14,15 @@ class CartItemSerializer(serializers.ModelSerializer):
     stall_id = serializers.PrimaryKeyRelatedField(
         queryset=Stall.objects.all(), source="stall", write_only=True
     )
+    # We don't track quantity anymore; expose a constant 1 for compatibility
+    quantity = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
         fields = ["id", "stall", "stall_id", "quantity", "added_at"]
 
-    def validate_quantity(self, value):
-        if value is None or value <= 0:
-            raise serializers.ValidationError("Quantity must be a positive integer.")
-        return value
-
-    def validate(self, attrs):
-        stall = attrs.get("stall") or getattr(self.instance, "stall", None)
-        qty = attrs.get("quantity") or getattr(self.instance, "quantity", None)
-        if stall is None or qty is None:
-            return attrs
-        # prevent adding items that are out of stock
-        if stall.quantity <= 0:
-            raise serializers.ValidationError({"stall_id": "This item is out of stock."})
-        # ensure requested does not exceed available at add/update time
-        if qty > stall.quantity:
-            raise serializers.ValidationError({"quantity": "Requested quantity exceeds available stock."})
-        return attrs
+    def get_quantity(self, obj):
+        return 1
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -47,9 +34,33 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    order_id = serializers.PrimaryKeyRelatedField(source="order", read_only=True)
+    buyer = serializers.SerializerMethodField()
+
     class Meta:
         model = OrderItem
-        fields = ["id", "stall", "product_name", "price_cents", "quantity"]
+        fields = [
+            "id",
+            "order_id",
+            "stall",
+            "product_name",
+            "price_cents",
+            "quantity",
+            "status",
+            "buyer",
+        ]
+
+    def get_buyer(self, obj):
+        o = getattr(obj, "order", None)
+        prof = getattr(o, "buyer_profile", None)
+        u = getattr(prof, "user", None)
+        if not u:
+            return None
+        return {
+            "id": u.id,
+            "first_name": u.first_name,
+            "last_name": u.last_name,
+        }
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -58,4 +69,3 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["id", "created_at", "total_cents", "items"]
-

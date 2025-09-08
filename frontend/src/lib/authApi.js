@@ -244,3 +244,44 @@ export async function apiDeleteMeal(id) {
   const { data } = await api.delete(`/stalls/${id}/`);
   return data;
 }
+
+// ----- Cart API -----
+export async function apiGetCart() {
+  const { data } = await api.get("cart/");
+  return data; // { id, status, items: [{id, stall:{id,product,price_cents,quantity}, quantity}] }
+}
+
+export async function apiAddToCart({ stall_id, quantity = 1 }) {
+  const { data } = await api.post("cart/items/", { stall_id, quantity });
+  return data; // full cart
+}
+
+export async function apiUpdateCartItem({ item_id, quantity }) {
+  const { data } = await api.patch(`cart/items/${item_id}/`, { quantity });
+  return data; // full cart
+}
+
+export async function apiRemoveCartItem({ item_id }) {
+  const { data } = await api.delete(`cart/items/${item_id}/`);
+  return data; // full cart
+}
+
+export async function apiCheckoutCart() {
+  const { data } = await api.post("cart/checkout/");
+  return data; // order payload
+}
+
+export async function apiGetBuyerOrders() {
+  const { data } = await api.get("cart/orders/");
+  return data; // [orders]
+}
+
+export async function apiGetSellerOrders() {
+  const { data } = await api.get("cart/seller-orders/");
+  return data; // [order items]
+}
+
+export async function apiSetOrderItemStatus({ order_item_id, status }) {
+  const { data } = await api.post(`cart/items/${order_item_id}/status/`, { status });
+  return data; // updated order item
+}

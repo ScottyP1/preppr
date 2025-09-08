@@ -56,7 +56,12 @@ class OrderItem(models.Model):
     product_name = models.CharField(max_length=120)
     price_cents = models.PositiveIntegerField()
     quantity = models.PositiveIntegerField()
+    STATUS_CHOICES = [
+        ("new", "New"),
+        ("accepted", "Accepted"),
+        ("declined", "Declined"),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
 
     def line_total_cents(self):
         return self.price_cents * self.quantity
-
