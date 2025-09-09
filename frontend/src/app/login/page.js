@@ -50,7 +50,7 @@ export default function Login() {
         ]}
         title="Login"
         placeholder="you@email.com"
-        linkText="Dont have a account? Click Here."
+        linkText="Don't have a account? Click Here."
         href="/signup"
         buttonLabel="Login"
         errors={errors}

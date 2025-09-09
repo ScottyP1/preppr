@@ -5,9 +5,11 @@ import { FaRobot } from "react-icons/fa";
 import { PiChefHat } from "react-icons/pi";
 import { FaRegUser } from "react-icons/fa";
 import { BsSend } from "react-icons/bs";
+import { WebSocket } from "vite";
 
-const Chat = ({author}) => {
-    // const webSocket = new WebSocket((window.location.protocol === "https:" ? "wss://" : "ws://")+ window.location.host+ "/ws/chat/");
+
+const Chat = ({author="user"}) => {
+    // const webSocket = new WebSocket("ws://"+ location.hostname+":8000"+"/ws/chat/");
     const webSocket = new WebSocket("ws://localhost:8000/ws/chat/");
     
     webSocket.onmessage = e => {
@@ -32,10 +34,11 @@ const Chat = ({author}) => {
     const sendMessage = (e) => {
         e.preventDefault();
         if (!draft.trim()) return;
-        webSocket.send(JSON.stringify({
-            //"author": author,
-            "message": draft.trim()
-        }));
+        console.log(author);
+        console.log(draft.trim())
+        
+        webSocket.send(JSON.stringify({ author: author, message: draft.trim() }));
+
         const nextId = messages.length + 1;
     
 

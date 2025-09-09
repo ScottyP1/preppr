@@ -6,6 +6,7 @@ from channels.generic.websocket import WebsocketConsumer
 
 class ChatView(WebsocketConsumer):
     def connect(self):
+        
         self.accept()
         
     def disconnect(self, code):
@@ -13,6 +14,8 @@ class ChatView(WebsocketConsumer):
     
     def receive(self, text_data=None, bytes_data=None):
         try:
+            print(text_data)
+            print(type(text_data))
             text_data_json =json.load(text_data) if (text_data != None)  else  None
             author = text_data_json["author"] # type:ignore object will have state or exception will be thrown
             message = text_data_json["message"] # type:ignore object will have state or exception will be thrown
