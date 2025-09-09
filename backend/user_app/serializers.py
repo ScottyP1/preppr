@@ -65,7 +65,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "role", "first_name", "last_name"]
+        fields = ["id", "username", "email", "role", "first_name", "last_name", "avatar", "bio"]
+        read_only_fields = ["id", "username", "email", "role"]
 
 
 class BuyerProfileSerializer(serializers.ModelSerializer):
@@ -117,6 +118,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
             "address",
             "zipcode",
             "stall",
+            "image",
         ]
 
     def validate_zipcode(self, value):

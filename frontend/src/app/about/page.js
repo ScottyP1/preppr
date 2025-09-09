@@ -1,7 +1,7 @@
 import Image from 'next/image'
 
 export default function About() {
-  const imgtxt1 = "In Ethiopia, families gather around a single platter of injera, tearing pieces by hand and sharing bites together. The act of eating from one plate isn’t just tradition—it’s a symbol of unity and trust. ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere orci non risus convallis."
+  const imgtxt1 = "In Ethiopia, families gather around a single platter of injera, tearing pieces by hand and sharing bites together. The act of eating from one plate isn’t just tradition—it’s a symbol of unity and trust."
   const imgtxt2 = "In India, the Sikh tradition of langar feeds millions every day. Volunteers prepare and serve free meals for anyone who enters, making food a living expression of generosity and equality."
   const imgtxt3 = "In small Italian towns, neighbors still gather for pasta-making days. Dough is kneaded and rolled side by side, then shared in long feasts that celebrate both craft and community."
   const imgtxt4 = "In Mexico, kitchens open their doors with tamales and tacos made for friends, neighbors, and passersby. Cooking becomes a way to connect, not just to feed."
@@ -85,9 +85,7 @@ export default function About() {
         </article>
       </section>
 
-      <footer className="w-full max-w-6xl mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
-        © {new Date().getFullYear()} — Preppr
-      </footer>
+      {/* Footer now provided globally via layout */}
     </main>
   )
 }

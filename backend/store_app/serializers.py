@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Stall, Tag, Allergen, SpecialRequest
+from .models import Stall, Tag, Allergen, SpecialRequest, StallImage
+from user_app.models import User, SellerProfile  # adjust path as needed
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -14,40 +15,63 @@ class AllergenSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
+class StallImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StallImage
+        fields = ["id", "image", "alt_text", "position", "is_primary"]
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
+
+
+class SellerMiniSerializer(serializers.ModelSerializer):
+    """Minimal nested seller info surfaced inside a stall"""
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name", "avatar"]
+
+
 class StallSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     allergens = AllergenSerializer(many=True, read_only=True)
     is_favorited = serializers.SerializerMethodField()
+    images = StallImageSerializer(many=True, read_only=True)
+    seller = serializers.SerializerMethodField()  # 👈 nested seller info
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Stall
         fields = [
             "id",
-            # basics
             "product",
             "description",
-            "image_url",
-            # location/availability
+            "image",
+            "images",
+            "seller",   # 👈 include seller object
             "location",
             "quantity",
             "radius_m",
-            # pricing/rating
             "price_cents",
             "price_level",
             "average_rating",
             "rating_count",
-            # nutrition
             "calories",
             "fat_g",
             "carbs_g",
-            # labels
+            "protein_g",
             "tags",
             "allergens",
-            # details
             "options",
             "includes",
             "special_requests_allowed",
-            # computed
             "is_favorited",
         ]
 
@@ -59,17 +83,42 @@ class StallSerializer(serializers.ModelSerializer):
         profile = getattr(user, "buyer_profile", None)
         return bool(profile and getattr(profile, "favorite_stall_id", None) == obj.id)
 
+    def get_seller(self, obj):
+        owner = getattr(obj, "owner_profile", None)
+        if owner and owner.user:
+            u = owner.user
+            return {
+                "id": u.id,
+                "first_name": u.first_name,
+                "last_name": u.last_name,
+                "avatar": u.avatar,
+                "profile_image": owner.image.url if owner.image else None,
+            }
+        return None
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
+
 
 class StallWriteSerializer(serializers.ModelSerializer):
     tag_names = serializers.ListField(child=serializers.CharField(), required=False)
     allergen_names = serializers.ListField(child=serializers.CharField(), required=False)
+    image = serializers.ImageField(required=False, allow_empty_file=False, write_only=True)
+    images = serializers.ListField(child=serializers.ImageField(), required=False, write_only=True)
 
     class Meta:
         model = Stall
         fields = [
             "product",
             "description",
-            "image_url",
+            "image",
+            "images",
             "location",
             "quantity",
             "radius_m",
@@ -78,6 +127,7 @@ class StallWriteSerializer(serializers.ModelSerializer):
             "calories",
             "fat_g",
             "carbs_g",
+            "protein_g",
             "options",
             "includes",
             "special_requests_allowed",
@@ -93,20 +143,76 @@ class StallWriteSerializer(serializers.ModelSerializer):
             alls = [Allergen.objects.get_or_create(name=name.strip())[0] for name in allergen_names if name.strip()]
             stall.allergens.set(alls)
 
+    def _sync_images(self, stall, image_files):
+        if image_files is None:
+            return
+        stall.images.all().delete()
+        for idx, img in enumerate(image_files):
+            StallImage.objects.create(
+                stall=stall,
+                image=img,
+                alt_text=f"{stall.product}",
+                position=idx,
+                is_primary=(idx == 0),
+            )
+
     def create(self, validated_data):
         tag_names = validated_data.pop("tag_names", None)
         allergen_names = validated_data.pop("allergen_names", None)
-        stall = Stall.objects.create(**validated_data)
+        image_files = validated_data.pop("images", None)
+        primary_image = validated_data.pop("image", None)
+
+        request = self.context.get("request")
+        seller_profile = None
+        if request and request.user.is_authenticated:
+            seller_profile = getattr(request.user, "seller_profile", None)
+
+        # Enforce seller location; use it for the stall's location
+        from rest_framework import serializers as drf_serializers
+        if not seller_profile or not (seller_profile.location and seller_profile.location.strip()):
+            raise drf_serializers.ValidationError(
+                {"location": "Seller profile must have a location set before creating a meal. Update your account settings."}
+            )
+
+        # Always set location from seller's profile to ensure consistency
+        validated_data["location"] = seller_profile.location
+
+        # Require at least one image
+        from rest_framework import serializers as drf_serializers
+        if primary_image is None and not image_files:
+            raise drf_serializers.ValidationError({"image": "An image is required to create a meal."})
+
+        # Attach seller_profile (owner) to the stall
+        stall = Stall.objects.create(owner_profile=seller_profile, **validated_data)
+
+        if primary_image is not None:
+            stall.image = primary_image
+            stall.save(update_fields=["image"])
+
         self._assign_labels(stall, tag_names, allergen_names)
+        self._sync_images(stall, image_files)
+
+        if not stall.image and image_files:
+            stall.image = image_files[0]
+            stall.save(update_fields=["image"])
+
         return stall
 
     def update(self, instance, validated_data):
         tag_names = validated_data.pop("tag_names", None)
         allergen_names = validated_data.pop("allergen_names", None)
+        image_files = validated_data.pop("images", None)
+        primary_image = validated_data.pop("image", None)
+
         for k, v in validated_data.items():
             setattr(instance, k, v)
         instance.save()
+
         self._assign_labels(instance, tag_names, allergen_names)
+        if primary_image is not None:
+            instance.image = primary_image
+            instance.save(update_fields=["image"])
+        self._sync_images(instance, image_files)
         return instance
 
 

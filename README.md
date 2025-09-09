@@ -6,6 +6,7 @@ This document summarizes the backend API for frontend integration: endpoints, pa
 - Auth: JWT (access/refresh)
 - Content type: send/receive JSON (`Content-Type: application/json`)
 - Auth header: `Authorization: Bearer <access_token>`
+ - Cart: endpoints under `/api/cart/` (see Cart section)
 
 ## Authentication
 
@@ -55,6 +56,14 @@ All require `Authorization: Bearer <access>`.
 - GET `/api/me/user/`
   - Purpose: Fetch the authenticated user.
   - Response: `{ "id", "username", "email", "role", "first_name", "last_name" }`
+ - PUT/PATCH `/api/me/user/`
+   - Purpose: Update profile name fields.
+   - Writable fields: `first_name`, `last_name`.
+   - Example:
+     ```json
+     { "first_name": "Jane", "last_name": "Doe" }
+     ```
+   - Notes: `username`, `email`, and `role` are read-only via this endpoint.
 
 - GET/PUT/PATCH `/api/me/buyer_profile/`
   - Role: only for users with `role = buyer`.
@@ -71,6 +80,14 @@ All require `Authorization: Bearer <access>`.
     ```json
     { "address": "1 Main St", "zipcode": 94105, "stall": 3 }
     ```
+  - Note: Addresses live on the buyer/seller profile objects, not on the user account.
+
+- POST `/api/me/become_seller/`
+  - Purpose: Upgrade an existing buyer account to a seller account.
+  - Role: only for users with `role = buyer`.
+  - Effect: sets `user.role = "seller"` and creates a blank `SellerProfile` if one does not exist.
+  - Response: `201` with the created seller profile payload.
+  - Notes: The `role` field on the user is read-only across APIs to prevent accidental switching; use this endpoint to change roles.
 
 ## Public Profiles (read-only)
 
@@ -126,6 +143,109 @@ Custom action:
 Query params:
 - `?tags=gluten-free,vegan` — filter to stalls that match any of the tag names
 - `?allergens_exclude=fish,nuts` — exclude stalls that include any of the named allergens
+
+### Images (Seller + Item cards)
+
+We now support multiple image URLs per Stall and an image URL for the Seller profile.
+
+Stall read shape includes images and seller image:
+
+```json
+{
+  "id": 3,
+  "product": "Apples",
+  "image_url": "https://cdn.example/primary.jpg",        // legacy primary
+  "images": [
+    { "id": 11, "href": "https://cdn.example/primary.jpg", "alt_text": "Apples", "position": 0, "is_primary": true },
+    { "id": 12, "href": "https://cdn.example/alt1.jpg",    "alt_text": "Apples", "position": 1, "is_primary": false }
+  ],
+  "seller_image_url": "https://cdn.example/seller.jpg"
+}
+```
+
+Write support (create/update) accepts either `image_url` (single) or `image_urls` (list). When `image_urls` is provided, it replaces Stall images and sets the first as primary, also syncing `image_url` for legacy clients.
+
+Example create (seller):
+
+```json
+{
+  "product": "Apples",
+  "location": "Ferry Plaza",
+  "quantity": 20,
+  "image_urls": [
+    "https://cdn.example/apples-1.jpg",
+    "https://cdn.example/apples-2.jpg"
+  ]
+}
+```
+
+Example update to replace images:
+
+```json
+{ "image_urls": ["https://cdn.example/new-primary.jpg"] }
+```
+
+Seller profile image
+
+- Field on seller profile: `image_url` (URL). Update via `/api/me/seller_profile/`.
+
+```bash
+curl -X PATCH http://localhost:8000/api/me/seller_profile/ \
+  -H 'Authorization: Bearer <access>' \
+  -H 'Content-Type: application/json' \
+  -d '{"image_url":"https://cdn.example/seller.jpg"}'
+```
+
+Notes:
+- Frontend item cards can use `stall.images[0].href` for primary, fall back to `stall.image_url` if list empty. Seller avatar/logo can use `stall.seller_image_url` or fetch `/api/sellers/{id}/`.
+- Alt text defaults to product name; can be extended later if needed.
+- This stores remote URLs (hrefs) only; no file upload pipeline is involved.
+
+
+## Cart
+
+Cart connects buyers to stall inventory and enforces stock checks when adding/updating items and again during checkout. Only `buyer` role may use these endpoints. All require JWT.
+
+- GET `/api/cart/`
+  - Returns current open cart for the buyer.
+  - Response example:
+    ```json
+    {
+      "id": 5,
+      "status": "open",
+      "items": [
+        { "id": 12, "stall": { "id": 3, "product": "Apples", "price_cents": 299, "quantity": 17 }, "quantity": 2 }
+      ]
+    }
+    ```
+
+- POST `/api/cart/items/`
+  - Body: `{ "stall_id": 3, "quantity": 2 }`
+  - Behavior: Adds item or merges quantity if it already exists. Validates that the stall has stock (`quantity > 0`) and requested does not exceed available.
+
+- PATCH `/api/cart/items/{item_id}/`
+  - Body: `{ "quantity": 1 }`
+  - Behavior: Updates quantity; validated against current stock.
+
+- DELETE `/api/cart/items/{item_id}/`
+  - Removes the item from the cart.
+
+- POST `/api/cart/checkout/`
+  - Re-validates all items inside a DB transaction with row locks. If any item is out-of-stock or insufficient, returns `400` with details and no changes made.
+  - On success: decrements stall `quantity`, creates an `Order` snapshot and closes the cart. Returns the created order:
+    ```json
+    {
+      "id": 9,
+      "total_cents": 897,
+      "items": [ { "product_name": "Apples", "price_cents": 299, "quantity": 3 } ]
+    }
+    ```
+
+Common errors:
+- Adding out-of-stock item → `400 { "stall_id": ["This item is out of stock."] }`
+- Request over available → `400 { "quantity": ["Requested quantity exceeds available stock."] }`
+- Checkout insufficient → `400 { "detail": "Insufficient stock for some items.", "items": [{ "stall_id": 3, "reason": "Insufficient stock", "available": 1 }] }`
+
 
 ## Typical Flows
 

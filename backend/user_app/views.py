@@ -5,6 +5,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 
 from rest_framework import viewsets, mixins, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -18,6 +19,8 @@ from .serializers import (
 )
 from .tokens import email_verification_token
 from .email_utils import send_verification_email
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 
 class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -109,8 +112,13 @@ class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 class MeViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get", "put", "patch"])
     def user(self, request):
+        if request.method in ["PUT", "PATCH"]:
+            ser = UserSerializer(instance=request.user, data=request.data, partial=True)
+            ser.is_valid(raise_exception=True)
+            ser.save()
+            return Response(ser.data)
         return Response(UserSerializer(request.user).data)
 
     @action(detail=False, methods=["get", "put", "patch"])
@@ -137,6 +145,37 @@ class MeViewSet(viewsets.ViewSet):
             return Response(ser.data)
         return Response(SellerProfileSerializer(profile).data)
 
+    @action(detail=False, methods=["post"])
+    def become_seller(self, request):
+        """Upgrade the current user to seller and create SellerProfile.
+
+        - Requires: authenticated user with role=buyer
+        - Effect: switches user.role to seller, creates SellerProfile (if missing)
+        - Response: the created/updated seller profile
+        """
+        if request.user.role != User.Roles.BUYER:
+            return Response({"detail": "Only buyers can become sellers."}, status=403)
+
+        with transaction.atomic():
+            user = request.user
+            user.role = User.Roles.SELLER
+            user.save(update_fields=["role"])
+
+            # Create or fetch seller profile
+            seller_profile, created = SellerProfile.objects.get_or_create(user=user)
+
+            # Copy overlapping fields from BuyerProfile → SellerProfile
+            buyer_profile = getattr(user, "buyer_profile", None)
+            if buyer_profile:
+                seller_profile.location = buyer_profile.location
+                seller_profile.address = buyer_profile.address
+                seller_profile.zipcode = buyer_profile.zipcode
+                seller_profile.save()
+
+
+        return Response(SellerProfileSerializer(seller_profile).data, status=status.HTTP_201_CREATED)
+
+
 
 class BuyerProfileViewSet(
     mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
@@ -152,3 +191,23 @@ class SellerProfileViewSet(
     queryset = SellerProfile.objects.select_related("user", "stall").all()
     serializer_class = SellerProfileSerializer
     permission_classes = [IsAuthenticated]
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Invalidate the provided refresh token by blacklisting it.
+
+        Expected payload: {"refresh": "<refresh_token>"}
+        """
+        token_str = request.data.get("refresh")
+        if not token_str:
+            return Response({"detail": "Missing 'refresh' token."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = RefreshToken(token_str)
+            token.blacklist()  # requires token_blacklist app installed
+        except TokenError:
+            return Response({"detail": "Invalid or expired refresh token."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
