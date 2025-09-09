@@ -1,9 +1,18 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const FoodCard = ({ id, image, product, price_level, seller, tags }) => {
   const router = useRouter();
   const fallbackImage = "/default-food.jpg";
+
+  const sellerId = seller?.id ?? seller?.user_id ?? seller?.user?.id;
+  const sellerSlug = sellerId
+    ? String(sellerId)
+    : `${(seller?.first_name || "").trim()} ${(seller?.last_name || "").trim()}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
 
   return (
     <div className="w-full mx-auto max-w-lg">
@@ -28,8 +37,8 @@ const FoodCard = ({ id, image, product, price_level, seller, tags }) => {
             </h2>
           </div>
 
-          {/* Seller */}
-          <div className="flex gap-3 items-center mt-2">
+          {/* Seller (clickable to public profile) */}
+          <Link href={`/account/${sellerSlug}`} className="flex gap-3 items-center mt-2">
             <Image
               src={seller?.avatar || "/default-avatar.png"}
               width={36}
@@ -40,7 +49,7 @@ const FoodCard = ({ id, image, product, price_level, seller, tags }) => {
             <h3 className="truncate">
               {seller?.first_name} {seller?.last_name}
             </h3>
-          </div>
+          </Link>
 
           {/* Tags row (no wrapping) */}
           {tags?.length > 0 && (

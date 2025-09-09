@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 
 const MarketItemHeader = ({ stall, cardHeight = 360 }) => {
@@ -64,21 +65,33 @@ const MarketItemHeader = ({ stall, cardHeight = 360 }) => {
       className="grid w-full rounded-xl bg-gray-300/80 p-3 md:w-1/2 md:p-4 grid-rows-[auto,1fr,auto]"
       style={{ height: cardHeight }}
     >
-      {/* Seller */}
-      <div className="flex items-start gap-3">
-        {stall?.seller?.avatar && (
-          <Image
-            src={stall.seller.avatar}
-            width={44}
-            height={44}
-            alt="Cook avatar"
-            className="rounded-full"
-          />
-        )}
-        <div className="font-medium">
-          {stall?.seller?.first_name} {stall?.seller?.last_name}
-        </div>
-      </div>
+      {/* Seller (clickable) */}
+      {(() => {
+        const s = stall?.seller || {};
+        const sellerId = s?.id ?? s?.user_id ?? s?.user?.id;
+        const sellerSlug = sellerId
+          ? String(sellerId)
+          : `${(s?.first_name || "").trim()} ${(s?.last_name || "").trim()}`
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)+/g, "");
+        return (
+          <Link href={`/account/${sellerSlug}`} className="flex items-start gap-3">
+            {s?.avatar && (
+              <Image
+                src={s.avatar}
+                width={44}
+                height={44}
+                alt="Cook avatar"
+                className="rounded-full"
+              />
+            )}
+            <div className="font-medium">
+              {s?.first_name} {s?.last_name}
+            </div>
+          </Link>
+        );
+      })()}
 
       {/* description */}
       <div className="mt-3 overflow-y-auto pr-1">

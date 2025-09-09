@@ -54,7 +54,6 @@ export default function CreateMealPage() {
     location: "",
     includes: "",
     optionsSelected: [],
-    // nutrition (per serving). Protein is UI-only for now.
     calories: 0,
     carbs_g: 0,
     fat_g: 0,
@@ -80,7 +79,10 @@ export default function CreateMealPage() {
   const sellerAddress = user?.address || user?.user?.address || "";
   const sellerZip = user?.zipcode ?? user?.user?.zipcode ?? "";
   const missingLocation = !String(sellerLocation || "").trim();
-  const missingZip = sellerZip === null || sellerZip === undefined || String(sellerZip).trim() === "";
+  const missingZip =
+    sellerZip === null ||
+    sellerZip === undefined ||
+    String(sellerZip).trim() === "";
 
   const toggleTag = (value) => {
     setForm((prev) => {
@@ -136,7 +138,11 @@ export default function CreateMealPage() {
   const calcCalories = (carbs, protein, fat) =>
     Math.max(
       0,
-      Math.round((Number(carbs) || 0) * 4 + (Number(protein) || 0) * 4 + (Number(fat) || 0) * 9)
+      Math.round(
+        (Number(carbs) || 0) * 4 +
+          (Number(protein) || 0) * 4 +
+          (Number(fat) || 0) * 9
+      )
     );
 
   const setMacro = (name, value) => {
@@ -153,7 +159,8 @@ export default function CreateMealPage() {
     const errs = {};
     if (!form.image) errs.image = "Please add a photo of your meal.";
     if (!form.product?.trim()) errs.product = "Title is required.";
-    if (!form.price || isNaN(parseFloat(form.price))) errs.price = "Price is required.";
+    if (!form.price || isNaN(parseFloat(form.price)))
+      errs.price = "Price is required.";
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
       setForm((p) => ({ ...p, error: Object.values(errs)[0] }));
@@ -317,7 +324,8 @@ export default function CreateMealPage() {
                   {/* Hide raw lat/lng; show human-friendly address/zip only */}
                   {missingLocation && (
                     <p className="mt-1 text-xs text-rose-600">
-                      Add your city/state in Account settings before posting a meal.
+                      Add your city/state in Account settings before posting a
+                      meal.
                     </p>
                   )}
                   <input
@@ -340,7 +348,8 @@ export default function CreateMealPage() {
                   />
                   {missingZip && (
                     <p className="mt-1 text-xs text-rose-600">
-                      Add your zip code in Account settings to improve filtering.
+                      Add your zip code in Account settings to improve
+                      filtering.
                     </p>
                   )}
                 </div>
@@ -540,7 +549,8 @@ export default function CreateMealPage() {
                     className="w-full"
                   />
                   <p className="mt-1 text-xs text-black/70">
-                    Calories auto-calc from macros (carbs×4 + protein×4 + fat×9).
+                    Calories auto-calc from macros (carbs×4 + protein×4 +
+                    fat×9).
                   </p>
                 </div>
                 <div>
@@ -549,12 +559,12 @@ export default function CreateMealPage() {
                     <input
                       type="number"
                       value={form.carbs_g}
-                    onChange={(e) =>
-                      setMacro(
-                        "carbs_g",
-                        Math.max(0, parseFloat(e.target.value || 0))
-                      )
-                    }
+                      onChange={(e) =>
+                        setMacro(
+                          "carbs_g",
+                          Math.max(0, parseFloat(e.target.value || 0))
+                        )
+                      }
                       className="w-24 rounded-xl border border-black/20 bg-white/90 px-2 py-1 text-right"
                     />
                   </label>
@@ -564,7 +574,9 @@ export default function CreateMealPage() {
                     max={150}
                     step={1}
                     value={form.carbs_g}
-                    onChange={(e) => setMacro("carbs_g", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      setMacro("carbs_g", parseFloat(e.target.value))
+                    }
                     className="w-full"
                   />
                 </div>
@@ -589,7 +601,9 @@ export default function CreateMealPage() {
                     max={100}
                     step={1}
                     value={form.fat_g}
-                    onChange={(e) => setMacro("fat_g", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      setMacro("fat_g", parseFloat(e.target.value))
+                    }
                     className="w-full"
                   />
                 </div>
@@ -614,7 +628,9 @@ export default function CreateMealPage() {
                     max={150}
                     step={1}
                     value={form.protein_g}
-                    onChange={(e) => setMacro("protein_g", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      setMacro("protein_g", parseFloat(e.target.value))
+                    }
                     className="w-full"
                   />
                 </div>
@@ -626,7 +642,11 @@ export default function CreateMealPage() {
                       // Derive calories from macros: 4/4/9 rule
                       const cals = Math.max(
                         0,
-                        Math.round((Number(form.carbs_g) || 0) * 4 + (Number(form.protein_g) || 0) * 4 + (Number(form.fat_g) || 0) * 9)
+                        Math.round(
+                          (Number(form.carbs_g) || 0) * 4 +
+                            (Number(form.protein_g) || 0) * 4 +
+                            (Number(form.fat_g) || 0) * 9
+                        )
                       );
                       setForm((p) => ({ ...p, calories: cals }));
                     }}

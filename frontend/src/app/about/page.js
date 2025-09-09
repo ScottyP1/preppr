@@ -85,9 +85,7 @@ export default function About() {
         </article>
       </section>
 
-      <footer className="w-full max-w-6xl mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
-        © {new Date().getFullYear()} — Preppr
-      </footer>
+      {/* Footer now provided globally via layout */}
     </main>
   )
 }
