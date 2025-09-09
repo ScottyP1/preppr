@@ -90,14 +90,14 @@ export default function MarketItemPage() {
               <span className="text-sm text-rose-600">{addError}</span>
             )}
           </>
-        ) : (
+        ) : !user?.user ? (
           <a
             href="/login"
             className="rounded-xl bg-emerald-500 px-5 py-2 font-semibold text-white hover:bg-emerald-600"
           >
             Sign in to Add
           </a>
-        )}
+        ) : null}
       </div>
 
       {/* request button on mobile (repurposed as Add to Cart for buyers) */}

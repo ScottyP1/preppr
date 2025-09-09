@@ -43,10 +43,7 @@ export default function UserMenu({ onClose }) {
         <Link href="/account" onClick={onClose} className={itemClass}>
           Account
         </Link>
-        <Link href="/inbox" onClick={onClose} className={itemClass}>
-          Inbox
-        </Link>
-        <Link href="/orders" onClick={onClose} className={itemClass}>
+        <Link href="/account?tab=orders" onClick={onClose} className={itemClass}>
           Orders
         </Link>
         <Link href="/support" onClick={onClose} className={itemClass}>

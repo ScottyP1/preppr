@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useContext, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { AuthContext } from "@/context/AuthContext";
 import ProfileModal from "@/components/ProfileModal";
@@ -20,7 +21,22 @@ export default function Account() {
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
 
   const tabs = ["My Store", "Orders", "Reviews", "Settings"];
-  const [selectedTab, setSelectedTab] = useState("My Store");
+  const searchParams = useSearchParams();
+  const [selectedTab, setSelectedTab] = useState(() => {
+    const tabParam = searchParams?.get("tab")?.toLowerCase();
+    if (tabParam === "orders") return "Orders";
+    if (tabParam === "reviews") return "Reviews";
+    if (tabParam === "settings") return "Settings";
+    return "My Store";
+  });
+
+  useEffect(() => {
+    const tabParam = searchParams?.get("tab")?.toLowerCase();
+    if (tabParam === "orders") setSelectedTab("Orders");
+    else if (tabParam === "reviews") setSelectedTab("Reviews");
+    else if (tabParam === "settings") setSelectedTab("Settings");
+    else setSelectedTab("My Store");
+  }, [searchParams]);
 
   // My Store data
   const [myStalls, setMyStalls] = useState([]);
@@ -369,8 +385,8 @@ function OrdersPanel() {
           {sellerItems.map((it) => (
             <div key={it.id} className="flex items-center justify-between rounded-2xl bg-white/90 p-4 shadow-sm">
               <div>
-                <div className="font-medium">{it.product_name}</div>
-                <div className="text-xs text-black/70">Buyer: {it.buyer?.first_name} {it.buyer?.last_name}</div>
+                <div className="font-medium text-gray-700">{it.product_name}</div>
+                <div className="text-xs text-gray-700">Buyer: {it.buyer?.first_name} {it.buyer?.last_name}</div>
               </div>
               <div className="flex items-center gap-2">
                 {it.status === "new" ? (
