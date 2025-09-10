@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 
-CANNEL_LAYERS = {
+CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
