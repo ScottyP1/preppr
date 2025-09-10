@@ -31,12 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",  
+    "django.contrib.staticfiles", 
     # third party apps
     "corsheaders",
     "rest_framework",
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
     "user_app",
     "store_app",
     "cart_app",
+    "chat_app"
+    
 ]
 # DEV: prints emails to console so you can test immediately
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -87,6 +91,8 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "preppr.asgi.application"
+
 WSGI_APPLICATION = "preppr.wsgi.application"
 
 
@@ -119,6 +125,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
